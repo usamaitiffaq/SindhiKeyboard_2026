@@ -13,6 +13,12 @@ android {
     namespace 'com.sindhi.urdu.english.keybad'
     compileSdk 36
 
+    tasks.register('cleanBuildDir') {
+        doLast {
+            delete 'build'
+        }
+    }
+
     defaultConfig {
         applicationId "com.sindhi.urdu.english.keybad"
         minSdk 23
@@ -197,4 +203,5 @@ dependencies {
     implementation libs.zt.zip
     implementation("androidx.compose.material:material-icons-extended")
     implementation 'com.android.billingclient:billing-ktx:6.1.0'
+    implementation "androidx.asynclayoutinflater:asynclayoutinflater:1.0.0"
 }

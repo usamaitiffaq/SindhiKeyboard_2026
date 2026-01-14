@@ -103,6 +103,7 @@ class HomeFragment : Fragment(), IBillingHandler {
             binding?.shimmerLayoutBanner?.visibility = View.GONE
         }
 
+
         requireActivity().findViewById<ConstraintLayout>(R.id.clEditing)
             .let { it?.visibility = View.INVISIBLE }
 

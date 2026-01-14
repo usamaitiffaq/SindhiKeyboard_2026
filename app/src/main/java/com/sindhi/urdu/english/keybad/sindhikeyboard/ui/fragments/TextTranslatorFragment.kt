@@ -128,7 +128,7 @@ class TextTranslatorFragment : Fragment(), TextToSpeech.OnInitListener {
         fromCountryName = PreferenceManager.getDefaultSharedPreferences(requireActivity())
             .getString("fromlangTT", "English (En)").toString()
         toCountryName = PreferenceManager.getDefaultSharedPreferences(requireActivity())
-            .getString("tolangTT", "Urdu (اردو)").toString()
+            .getString("tolangTT", "Sindhi (سنڌي)").toString()
         fromCountryFlag.let {
             binding.ivfromflag.background =
                 AppCompatResources.getDrawable(requireActivity(), fromCountryFlag)

@@ -178,7 +178,7 @@ class KeyboardTestFragment : Fragment() {
                 Handler().postDelayed({
                     binding.shimmerLayout1.stopShimmer()
                     binding.shimmerLayout1.visibility = View.GONE
-                    binding.separator.visibility = View.VISIBLE
+//                    binding.separator.visibility = View.VISIBLE
                     binding.adViewContainer.removeView(binding.shimmerLayout1)
 
                     val parent = collapsibleAdView?.parent as? ViewGroup
@@ -193,7 +193,7 @@ class KeyboardTestFragment : Fragment() {
             binding.adViewContainer.visibility = View.GONE
             binding.shimmerLayout1.stopShimmer()
             binding.shimmerLayout1.visibility = View.GONE
-            binding.separator.visibility = View.GONE
+//            binding.separator.visibility = View.GONE
         }
     }
 
@@ -251,16 +251,11 @@ class KeyboardTestFragment : Fragment() {
         adView.loadAd(adRequest)
         adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
-                binding.separator.visibility = View.VISIBLE
+//                binding.separator.visibility = View.VISIBLE
                 binding.adViewContainer.removeAllViews()
                 binding.adViewContainer.addView(adView)
                 NativeMaster.collapsibleBannerAdMobHashMap!!["kettest"] = adView
                 Log.d("jdjasjjsa", "onAdLoaded: ")
-
-            }
-
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                binding.separator.visibility = View.GONE
 
             }
 

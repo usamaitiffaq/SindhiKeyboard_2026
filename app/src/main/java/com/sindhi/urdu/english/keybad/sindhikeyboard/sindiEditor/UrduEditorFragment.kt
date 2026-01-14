@@ -547,6 +547,9 @@ class UrduEditorFragment : Fragment() {
                             btnCancelVisibility = true
                         )
                         binding.clExitDialog.visibility = View.VISIBLE
+
+//                        requireActivity().findViewById<ConstraintLayout>(R.id.clEditing)
+//                            .let { it?.visibility = View.INVISIBLE }
                     }
                 }
             }

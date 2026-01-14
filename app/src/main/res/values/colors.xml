@@ -55,8 +55,6 @@
     <color name="BlueSmok">#81DAF5</color>
     <color name="WhiteLight">#8e8e8e</color>
     <color name="White">#FFFFFF</color>
-    <color name="home_bg_color">#DEE1EB</color>
-
     <color name="Ivory">#FFFFF0</color>
     <color name="LightYellow">#FFFFE0</color>
     <color name="Yellow">#FFFF00</color>
@@ -234,5 +232,6 @@
     <color name="btnEnabledKeyboard">#007E33</color>
     <color name="btnEnabledKeyboardNumber">#015A25</color>
     <color name="candidate_background">#042704</color>
+    <color name="home_bg_color">#DEE1EB</color>
 
 </resources>
