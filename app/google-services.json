@@ -1,0 +1,41 @@
+{
+  "project_info": {
+    "project_number": "750770304639",
+    "firebase_url": "https://sindhi-keyboard-e944e-default-rtdb.firebaseio.com",
+    "project_id": "sindhi-keyboard-e944e",
+    "storage_bucket": "sindhi-keyboard-e944e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750770304639:android:07f9f6e5d58155470e714a",
+        "android_client_info": {
+          "package_name": "com.sindhi.urdu.english.keybad"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750770304639-15rgrf5u5aqrquk33j8i4remq2a4paq2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4oZpiIvbSVQGAXQZI_B4TTjywtOhKRf0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750770304639-15rgrf5u5aqrquk33j8i4remq2a4paq2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-3747520410546258~6769204044"
+    }
+  ],
+  "configuration_version": "1"
+}

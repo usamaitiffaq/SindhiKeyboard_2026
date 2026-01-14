@@ -1,0 +1,232 @@
+package com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments
+
+import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.Intent
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
+import com.sindhi.urdu.english.keybad.BuildConfig
+import com.sindhi.urdu.english.keybad.R
+import com.sindhi.urdu.english.keybad.databinding.FragmentSindhiStatusShowBinding
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NetworkCheck
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NewNativeAdClass
+import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.PURCHASE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.adapters.SindhiPoetryShowAdapter
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.sindhiPoetryModels.SindhiPoetry
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.sindhiPoetryModels.SindhiPoetryItemClickListener
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_OVER_ALL
+
+class SindhiStatusShowFragment : Fragment(), SindhiPoetryItemClickListener {
+    lateinit var binding: FragmentSindhiStatusShowBinding
+    var isPurchased: Boolean? = null
+    var navController: NavController? = null
+    private val args: SindhiStatusShowFragmentArgs by navArgs()
+    var adapter: SindhiPoetryShowAdapter? = null
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentSindhiStatusShowBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
+
+        requireActivity().onBackPressedDispatcher
+            .addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val navController = findNavController()
+                    val currentDestId = navController.currentDestination?.id
+                    if (currentDestId == R.id.navSindhiStatusShow) {
+                        navController.navigate(SindhiStatusShowFragmentDirections.actionNavSindhiStatusShowToNavSindhiStatus())
+                    } else {
+                        navController.popBackStack()
+                    }
+
+                }
+            })
+
+        binding.rvPoetryShow.layoutManager = LinearLayoutManager(requireActivity())
+
+        when (args.poetryName) {
+            "استادبخاري" -> {
+                adapter = SindhiPoetryShowAdapter(SindhiPoetry.getUstadBukhariList(),this)
+                binding.rvPoetryShow.adapter = adapter
+            }
+
+            "رومينٽڪ شاعري" -> {
+                adapter = SindhiPoetryShowAdapter(SindhiPoetry.getRomanticShayriList(),this)
+                binding.rvPoetryShow.adapter = adapter
+            }
+
+            "شاھ لطيف جي شاعري ۽ سمجھاني" -> {
+                adapter = SindhiPoetryShowAdapter(SindhiPoetry.getShahLatifShayriList(),this)
+                binding.rvPoetryShow.adapter = adapter
+            }
+
+            "شيخ اياز" -> {
+                adapter = SindhiPoetryShowAdapter(SindhiPoetry.getSheikhAyazShayriList(),this)
+                binding.rvPoetryShow.adapter = adapter
+            }
+
+            "کل ۽پوگ" -> {
+                adapter = SindhiPoetryShowAdapter(SindhiPoetry.getKulPogShayriList(),this)
+                binding.rvPoetryShow.adapter = adapter
+            }
+
+            "لطيفيات" -> {
+                adapter = SindhiPoetryShowAdapter(SindhiPoetry.getLatifiyatShayriList(),this)
+                binding.rvPoetryShow.adapter = adapter
+            }
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onResume() {
+        super.onResume()
+        requireActivity().hideSystemUIUpdated()
+        isNavControllerAdded()
+
+        val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
+        if (ivClose != null) {
+            ivClose.visibility = View.INVISIBLE
+        }
+
+        val txtSindhiKeyboard = requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
+        if (txtSindhiKeyboard != null) {
+            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(requireContext(), R.drawable.back),null,null,null)
+            txtSindhiKeyboard.text = args.poetryName
+
+            val startDrawable = txtSindhiKeyboard.compoundDrawables[0]
+            txtSindhiKeyboard.setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    if (event.x <= (startDrawable?.bounds?.width() ?: 0)) {
+                        requireActivity().onBackPressed()
+                        return@setOnTouchListener true
+                    }
+                }
+                false
+            }
+        }
+
+        if (isPurchased!!) {
+            binding.nativeAdContainerAd.visibility = View.GONE
+        } else {
+            if (NetworkCheck.isNetworkAvailable(requireContext())
+                && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(Preferences.ADS_NATIVE_POETRY_INSIDE,"ON").equals("ON",true)) {
+                val pref =requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+                val adId  =if (!BuildConfig.DEBUG){
+                    pref.getString(NATIVE_OVER_ALL,"ca-app-pub-3747520410546258/1702944653")
+                }
+                else{
+                    resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
+                }
+                NewNativeAdClass.checkAdRequestAdmob(
+                    mContext = requireActivity(),
+                    adId = adId!!,//getString(R.string.admob_native),
+                    fragmentName = "OverallAtPoetryExit",
+                    isMedia = false,
+                    adContainer = binding.nativeAdContainerAd,
+                    isMediumAd = false,
+                    onFailed = {
+                        binding.nativeAdContainerAd.visibility = View.GONE
+                        binding.separator.visibility = View.GONE
+                               },
+                    onAddLoaded = {
+                        binding.shimmerLayout.stopShimmer()
+                        binding.shimmerLayout.visibility = View.GONE
+                        binding.separator.visibility = View.VISIBLE
+                    })
+            } else {
+                binding.nativeAdContainerAd.visibility = View.GONE
+                binding.separator.visibility = View.GONE
+
+            }
+        }
+    }
+
+    fun isNavControllerAdded() {
+        if (isAdded) {
+            navController = findNavController()
+        }
+    }
+
+    override fun onPoetryItemCopyClicked(poetry: String) {
+        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("label", poetry)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(context, "Text Copied to ClipBoard", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onPoetryItemShareClicked(poetry: String) {
+        val intent2 = Intent()
+        intent2.action = Intent.ACTION_SEND
+        intent2.type = "text/plain"
+        intent2.putExtra(Intent.EXTRA_TEXT, poetry)
+        requireContext().startActivity(Intent.createChooser(intent2, "Share via"))
+    }
+
+    override fun onPoetryItemWhatsappClicked(poetry: String) {
+        val whatsappIntent = Intent(Intent.ACTION_SEND)
+        whatsappIntent.type = "text/plain"
+        whatsappIntent.setPackage("com.whatsapp")
+        whatsappIntent.putExtra(Intent.EXTRA_TEXT, poetry)
+
+        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        try {
+            requireContext().startActivity(whatsappIntent)
+        } catch (ex: ActivityNotFoundException) {
+            Toast.makeText(context, "Whatsapp have not been installed.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onPoetryItemMessengerClicked(poetry: String) {
+        val sendIntent = Intent(Intent.ACTION_VIEW)
+        sendIntent.type = "text/plain"
+        sendIntent.action = Intent.ACTION_SEND
+        sendIntent.putExtra(Intent.EXTRA_TEXT, poetry)
+        sendIntent.setPackage("com.facebook.orca")
+        sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        try {
+            requireContext().startActivity(Intent.createChooser(sendIntent, "Share text via..."))
+        } catch (ex: ActivityNotFoundException) {
+            Toast.makeText(context, "Please Install Facebook Messenger", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    override fun onPoetryItemTwitterClicked(poetry: String) {
+        try {
+            val intent = Intent()
+            intent.action = Intent.ACTION_SEND
+            intent.putExtra(Intent.EXTRA_TEXT, poetry)
+            intent.type = "text/plain"
+            intent.setPackage("com.twitter.android")
+            requireContext().startActivity(Intent.createChooser(intent, "Share text via..."))
+        } catch (e: Exception) {
+            Toast.makeText(context,
+                "You don't seem to have twitter installed on this device",
+                Toast.LENGTH_SHORT).show()
+        }
+    }
+}

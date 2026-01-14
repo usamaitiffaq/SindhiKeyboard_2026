@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.HomeFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_nav_home_to_themesFragment"
+            app:destination="@id/themesFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_translationFragment"
+            app:destination="@id/translationFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_exitScreen_fragment"
+            app:destination="@id/exitScreen_fragment" />
+        <action
+            android:id="@+id/action_nav_home_to_navSindhiStatus"
+            app:destination="@id/navSindhiStatus" />
+
+        <action
+            android:id="@+id/action_nav_home_to_navEditors"
+            app:destination="@id/nav_editor" />
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/nav_editor"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.sindiEditor.UrduEditorFragment"
+        tools:layout="@layout/fragment_urdu_editor">
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/navSindhiStatus"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SindhiStatusFragment"
+        android:label="Sindhi Status"
+        tools:layout="@layout/fragment_sindhi_status">
+
+        <action
+            android:id="@+id/action_navSindhiStatus_to_nav_home"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_home"
+            app:popUpToInclusive="false"/>
+        <action
+            android:id="@+id/action_navSindhiStatus_to_navSindhiStatusShow"
+            app:destination="@id/navSindhiStatusShow" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/navSindhiStatusShow"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SindhiStatusShowFragment"
+        android:label="Sindhi Status"
+        tools:layout="@layout/fragment_sindhi_status_show">
+
+        <argument
+            android:name="poetryName"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_navSindhiStatusShow_to_navSindhiStatus"
+            app:destination="@id/navSindhiStatus"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/navSindhiStatus"
+            app:popUpToInclusive="false"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/themesFragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.Themes.ThemesFragment"
+        android:label="Themes"
+        tools:layout="@layout/fragment_themes">
+        <argument
+            android:name="fromFragment"
+            app:argType="string"
+            android:defaultValue="FromHome" />
+
+        <action
+            android:id="@+id/action_themesFragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_home"
+            app:popUpToInclusive="false"/>
+        <action
+            android:id="@+id/action_themesFragment_to_themes_apply_fragment"
+            app:destination="@id/themes_apply_fragment" />
+        <action
+            android:id="@+id/action_themes_fragment_to_exitScreen_fragment"
+            app:destination="@id/exitScreen_fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/translationFragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.dictionary.TranslationFragment"
+        android:label="Translation"
+        tools:layout="@layout/fragment_translation">
+
+        <action
+            android:id="@+id/action_translation_to_text_translation"
+            app:destination="@+id/navTextTranslator"/>
+
+        <action
+            android:id="@+id/action_translationFragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_home"
+            app:popUpToInclusive="false"/>
+
+        <action
+            android:id="@+id/action_translationFragment_to_history_fragment"
+            app:destination="@id/history_fragment" />
+        <action
+            android:id="@+id/action_translationFragment_to_conversationFragment"
+            app:destination="@id/conversationFragment" />
+        <action
+            android:id="@+id/action_translationFragment_to_speechFragment"
+            app:destination="@id/speechFragment" />
+        <action
+            android:id="@+id/action_translationFragment_to_DictionaryFragment"
+            app:destination="@id/DictionaryFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/navTextTranslator"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.TextTranslatorFragment"
+        android:label="Text Translator"
+        tools:layout="@layout/fragment_text_translator">
+
+        <action
+            android:id="@+id/action_navTextTranslator_to_navTranslator"
+            app:destination="@id/navTranslator"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/navTranslator"
+            app:popUpToInclusive="false" />
+
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/themes_apply_fragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.Themes.ThemesApplyFragment"
+        android:label="Apply Theme"
+        tools:layout="@layout/fragment_themes_apply">
+
+        <argument
+            android:name="directFromFragment"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_themes_apply_fragment_to_themesFragment"
+            app:destination="@id/themesFragment" />
+        <action
+            android:id="@+id/action_themes_apply_fragment_to_themes_test_fragment"
+            app:destination="@id/themes_test_fragment" />
+
+        <action
+            android:id="@+id/action_themes_apply_fragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_home"
+            app:popUpToInclusive="false"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/themes_test_fragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.KeyboardTestFragment"
+        android:label="Test Keyboard"
+        tools:layout="@layout/fragment_keyboard_test">
+
+        <action
+            android:id="@+id/action_themes_test_fragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_home"
+            app:popUpToInclusive="false"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/dailyStatusFragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.DailyStatus.Retrofitcalls.shayariShow.DailystatusFragment"
+        android:label="Daily Status"
+        tools:layout="@layout/fragment_dailystatus">
+        <action
+            android:id="@+id/action_dailystatusFragment_to_shayarishow_fragment"
+            app:destination="@id/shayarishow_fragment" />
+        <action
+            android:id="@+id/action_dailyStatusFragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_home"
+            app:popUpToInclusive="false"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/DictionaryFragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.dictionary.Dictionary"
+        android:label="Dictionary"
+        tools:layout="@layout/fragment_dictionary">
+        <action
+            android:id="@+id/action_DictionaryFragment_to_translationFragment"
+            app:destination="@id/translationFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/translationFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/speechFragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SpeechToText.SpeechFragment"
+        android:label="Speech to text"
+        tools:layout="@layout/fragment_speech">
+        <action
+            android:id="@+id/action_speechFragment_to_fromcountry_fragment"
+            app:destination="@id/fromcountry_fragment" />
+        <action
+            android:id="@+id/action_speechFragment_to_tocountry_fragment"
+            app:destination="@id/tocountry_fragment" />
+        <argument
+            android:name="fromcountryname"
+            app:argType="string" />
+        <argument
+            android:name="fromcountryflag"
+            app:argType="integer" />
+        <argument
+            android:name="tocountryname"
+            app:argType="string" />
+        <argument
+            android:name="tocountryflag"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_speechFragment_to_translationFragment"
+            app:destination="@id/translationFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/translationFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_settingsFragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_home"
+            app:popUpToInclusive="false"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/conversationFragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.ConversationFragment"
+        android:label="Conversation"
+        tools:layout="@layout/fragment_conversation">
+        <argument
+            android:name="from_name"
+            app:argType="string" />
+        <argument
+            android:name="from_flag"
+            app:argType="integer" />
+        <argument
+            android:name="to_name"
+            app:argType="string" />
+        <argument
+            android:name="to_flag"
+            app:argType="integer" />
+
+        <action
+            android:id="@+id/action_conversationFragment_to_fromcountry_fragment"
+            app:destination="@id/fromcountry_fragment" />
+        <action
+            android:id="@+id/action_conversationFragment_to_tocountry_fragment"
+            app:destination="@id/tocountry_fragment" />
+        <action
+            android:id="@+id/action_conversationFragment_to_translationFragment"
+            app:destination="@id/translationFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/translationFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_conversationFragment_to_history_fragment"
+            app:destination="@id/history_fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fromcountry_fragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SpeechToText.fromcountry_fragment"
+        android:label="Select Language">
+        <action
+            android:id="@+id/action_fromcountry_fragment_to_speechFragment"
+            app:destination="@id/speechFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/speechFragment"
+            app:popUpToInclusive="true" />
+        <argument
+            android:name="tocountryname"
+            app:argType="string" />
+        <argument
+            android:name="tocountryflag"
+            app:argType="integer" />
+        <argument
+            android:name="fromcountryname"
+            app:argType="string" />
+        <argument
+            android:name="fromcountryflag"
+            app:argType="integer" />
+        <argument
+            android:name="fragmentname"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_fromcountry_fragment_to_conversationFragment"
+            app:destination="@id/conversationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/tocountry_fragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SpeechToText.tocountry_fragment"
+        android:label="Select Language">
+        <action
+            android:id="@+id/action_tocountry_fragment_to_speechFragment"
+            app:destination="@id/speechFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/speechFragment"
+            app:popUpToInclusive="true" />
+        <argument
+            android:name="fromcountryname"
+            app:argType="string" />
+        <argument
+            android:name="fromcountryflag"
+            app:argType="integer" />
+        <argument
+            android:name="tocountryname"
+            app:argType="string" />
+        <argument
+            android:name="tocountryflag"
+            app:argType="integer" />
+        <argument
+            android:name="fragmentname"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_tocountry_fragment_to_conversationFragment"
+            app:destination="@id/conversationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/history_fragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.history.history_fragment"
+        android:label="History"
+        tools:layout="@layout/fragment_history_fragment">
+
+        <action
+            android:id="@+id/action_history_fragment_to_translationFragment"
+            app:destination="@id/translationFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/translationFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_history_fragment_to_conversationFragment"
+            app:destination="@id/conversationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/shayarishow_fragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.DailyStatus.Retrofitcalls.shayariShow.Shayarishow_fragment"
+        android:label="Shayari"
+        tools:layout="@layout/fragment_shayarishow_fragment">
+        <argument
+            android:name="id"
+            app:argType="integer" />
+        <argument
+            android:name="shayaritype"
+            app:argType="string" />
+        <argument
+            android:name="nameForHeader"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/exitScreen_fragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.ExitScreenFragment"
+        android:label="Explore Feature"
+        tools:layout="@layout/fragment_exit_screen">
+
+        <action
+            android:id="@+id/action_keypress_fragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_home"
+            app:popUpToInclusive="false"/>
+        <action
+            android:id="@+id/action_exitScreen_fragment_to_themes_fragment"
+            app:destination="@id/themesFragment" />
+        <action
+            android:id="@+id/action_exitScreen_fragment_to_themes_apply_fragment"
+            app:destination="@id/themes_apply_fragment" />
+
+    </fragment>
+</navigation>

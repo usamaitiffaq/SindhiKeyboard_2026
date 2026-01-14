@@ -1,0 +1,13 @@
+package com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.history.roomDb
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "convo_tb")
+class Conversation(
+    @PrimaryKey(autoGenerate = true)
+    var id: Int? = null,
+    var source: String? = null,
+    var translation: String? = null,
+    var from:String?=null,
+    var time:Long?=null)

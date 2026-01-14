@@ -1,0 +1,41 @@
+package com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.history.roomDb
+
+import androidx.lifecycle.LiveData
+
+class historyRepo(private val wordDao: wordDao) {
+
+    val searchedWords: LiveData<List<WordEntity>> = wordDao.getWord()
+
+    val getConversationExtReFormulated: LiveData<List<ConversationExtension>> = wordDao.getConversationExtReFormulated()
+    val conversationTemporary: LiveData<List<ConversationExtensionTemp>> = wordDao.getConversationTemporary()
+
+    val convoto: LiveData<List<Conversationto>> = wordDao.getto()
+
+    suspend fun insertWord(p: WordEntity) {
+        wordDao.word(p)
+    }
+
+    fun deleteWord(wordEntity: WordEntity) {
+        wordDao.deleteWordWhere(wordEntity.word, wordEntity.def)
+    }
+
+    suspend fun deleteData() {
+        wordDao.deleteAll()
+    }
+
+    suspend fun deleteFromTemporaryDB() {
+        wordDao.deleteFromTemporaryDB()
+    }
+
+    suspend fun insertConvoTemp(conversationExtTemp: ConversationExtensionTemp) {
+        wordDao.insertConvoTemp(conversationExtTemp)
+    }
+
+    suspend fun insertConversationReFormulated(conversationExt: ConversationExtension) {
+        wordDao.insertConversationReFormulated(conversationExt)
+    }
+
+    suspend fun deleteSelectedConversationHistory(conversationName: String) {
+        wordDao.deleteSelectedConversationHistory(conversationName)
+    }
+}

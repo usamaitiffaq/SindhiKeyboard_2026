@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/home_bg_color">
+
+    <ScrollView
+        android:id="@+id/svCards"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/adViewContainer">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/home_bg_color">
+
+            <View
+                android:id="@+id/clTextTranslator"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_marginHorizontal="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:background="@drawable/buttons_bg"
+                app:layout_constraintEnd_toStartOf="@+id/clSpeechToText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvTextTranslator"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginVertical="@dimen/_5sdp"
+                android:clickable="false"
+                android:elevation="@dimen/_11sdp"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:text="@string/label_text_translator"
+                android:textColor="@color/app_text"
+                android:textSize="@dimen/_12ssp"
+                android:textStyle="bold"
+                app:fontFamily="@font/lexend_medium"
+                app:layout_constraintBottom_toBottomOf="@+id/clTextTranslator"
+                app:layout_constraintEnd_toEndOf="@+id/clTextTranslator"
+                app:layout_constraintStart_toStartOf="@+id/clTextTranslator"
+                app:layout_constraintTop_toTopOf="@+id/clTextTranslator"
+                app:layout_constraintVertical_bias="1" />
+
+            <ImageView
+                android:id="@+id/ivTextTranslator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_11sdp"
+                android:src="@drawable/ic_text_translation"
+                app:layout_constraintBottom_toTopOf="@+id/tvTextTranslator"
+                app:layout_constraintEnd_toEndOf="@+id/clTextTranslator"
+                app:layout_constraintStart_toStartOf="@+id/clTextTranslator"
+                app:layout_constraintTop_toTopOf="@+id/clTextTranslator" />
+
+            <View
+                android:id="@+id/clSpeechToText"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_marginHorizontal="@dimen/_10sdp"
+                android:background="@drawable/buttons_bg"
+
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/clTextTranslator"
+                app:layout_constraintTop_toTopOf="@+id/clTextTranslator" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvSpeechToText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginVertical="@dimen/_5sdp"
+                android:clickable="false"
+                android:elevation="@dimen/_11sdp"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:text="@string/label_speechTotext"
+                android:textColor="@color/app_text"
+                android:textSize="@dimen/_12ssp"
+                android:textStyle="bold"
+                app:fontFamily="@font/lexend_medium"
+                app:layout_constraintBottom_toBottomOf="@+id/clSpeechToText"
+                app:layout_constraintEnd_toEndOf="@+id/clSpeechToText"
+                app:layout_constraintStart_toStartOf="@+id/clSpeechToText"
+                app:layout_constraintTop_toTopOf="@+id/clSpeechToText"
+                app:layout_constraintVertical_bias="1" />
+
+            <ImageView
+                android:id="@+id/ivSpeechToText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_11sdp"
+                android:src="@drawable/ic_speech_to_text"
+                app:layout_constraintBottom_toTopOf="@+id/tvSpeechToText"
+                app:layout_constraintEnd_toEndOf="@+id/clSpeechToText"
+                app:layout_constraintStart_toStartOf="@+id/clSpeechToText"
+                app:layout_constraintTop_toTopOf="@+id/clSpeechToText" />
+
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/nativeAdContainerAd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_3sdp"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:visibility="visible"
+                app:cardBackgroundColor="@color/native_ad_background"
+                app:cardCornerRadius="@dimen/_5sdp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/clTextTranslator">
+
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shimmerLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <include layout="@layout/native_admob_media_left_side_shimmer" />
+                    <!--<include layout="@layout/size_native_medium_shimmer" />-->
+                </com.facebook.shimmer.ShimmerFrameLayout>
+            </androidx.cardview.widget.CardView>
+
+
+            <View
+                android:id="@+id/clTextToAudioFile"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_marginHorizontal="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:background="@drawable/buttons_bg"
+
+                app:layout_constraintEnd_toStartOf="@+id/clConversation"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/nativeAdContainerAd" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvTextToAudioFile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginVertical="@dimen/_5sdp"
+                android:clickable="false"
+                android:elevation="@dimen/_11sdp"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:text="@string/label_text_to_audio_file"
+                android:textColor="@color/app_text"
+                android:textSize="@dimen/_12ssp"
+                android:textStyle="bold"
+                app:fontFamily="@font/lexend_medium"
+                app:layout_constraintBottom_toBottomOf="@+id/clTextToAudioFile"
+                app:layout_constraintEnd_toEndOf="@+id/clTextToAudioFile"
+                app:layout_constraintStart_toStartOf="@+id/clTextToAudioFile"
+                app:layout_constraintTop_toTopOf="@+id/clTextToAudioFile"
+                app:layout_constraintVertical_bias="1" />
+
+            <ImageView
+                android:id="@+id/ivTextToAudioFile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_11sdp"
+                android:src="@drawable/ic_text_to_audio_file"
+                app:layout_constraintBottom_toTopOf="@+id/tvTextToAudioFile"
+                app:layout_constraintEnd_toEndOf="@+id/clTextToAudioFile"
+                app:layout_constraintStart_toStartOf="@+id/clTextToAudioFile"
+                app:layout_constraintTop_toTopOf="@+id/clTextToAudioFile" />
+
+            <View
+                android:id="@+id/clConversation"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_marginHorizontal="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:background="@drawable/buttons_bg"
+
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/clTextToAudioFile"
+                app:layout_constraintTop_toBottomOf="@+id/nativeAdContainerAd" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvConversation"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginVertical="@dimen/_5sdp"
+                android:clickable="false"
+                android:elevation="@dimen/_11sdp"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:text="@string/label_conversation"
+                android:textColor="@color/app_text"
+                android:textSize="@dimen/_12ssp"
+                android:textStyle="bold"
+                app:fontFamily="@font/lexend_medium"
+                app:layout_constraintBottom_toBottomOf="@+id/clConversation"
+                app:layout_constraintEnd_toEndOf="@+id/clConversation"
+                app:layout_constraintStart_toStartOf="@+id/clConversation"
+                app:layout_constraintTop_toTopOf="@+id/clConversation"
+                app:layout_constraintVertical_bias="1" />
+
+            <ImageView
+                android:id="@+id/ivConversation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_11sdp"
+                android:src="@drawable/ic_conversation"
+                app:layout_constraintBottom_toTopOf="@+id/tvTextToAudioFile"
+                app:layout_constraintEnd_toEndOf="@+id/clConversation"
+                app:layout_constraintStart_toStartOf="@+id/clConversation"
+                app:layout_constraintTop_toTopOf="@+id/clConversation" />
+
+            <View
+                android:id="@+id/clHistory"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_marginHorizontal="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginBottom="@dimen/_50sdp"
+                android:background="@drawable/buttons_bg"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/clFavourite"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/clTextToAudioFile" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvHistory"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginVertical="@dimen/_5sdp"
+                android:clickable="false"
+                android:elevation="@dimen/_11sdp"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:text="@string/label_history"
+                android:textColor="@color/app_text"
+                android:textSize="@dimen/_12ssp"
+                android:textStyle="bold"
+                app:fontFamily="@font/lexend_medium"
+                app:layout_constraintBottom_toBottomOf="@+id/clHistory"
+                app:layout_constraintEnd_toEndOf="@+id/clHistory"
+                app:layout_constraintStart_toStartOf="@+id/clHistory"
+                app:layout_constraintTop_toTopOf="@+id/clHistory"
+                app:layout_constraintVertical_bias="1" />
+
+            <ImageView
+                android:id="@+id/ivHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_11sdp"
+                android:src="@drawable/ic_history"
+                app:layout_constraintBottom_toTopOf="@+id/tvHistory"
+                app:layout_constraintEnd_toEndOf="@+id/clHistory"
+                app:layout_constraintStart_toStartOf="@+id/clHistory"
+                app:layout_constraintTop_toTopOf="@+id/clHistory" />
+
+            <View
+                android:id="@+id/clFavourite"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_marginHorizontal="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginBottom="@dimen/_50sdp"
+                android:background="@drawable/buttons_bg"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/clHistory"
+                app:layout_constraintTop_toBottomOf="@+id/clConversation" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvFavourite"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginVertical="@dimen/_5sdp"
+                android:clickable="false"
+                android:elevation="@dimen/_11sdp"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:text="@string/label_favourite"
+                android:textColor="@color/app_text"
+                android:textSize="@dimen/_12ssp"
+                android:textStyle="bold"
+                app:fontFamily="@font/lexend_medium"
+                app:layout_constraintBottom_toBottomOf="@+id/clFavourite"
+                app:layout_constraintEnd_toEndOf="@+id/clFavourite"
+                app:layout_constraintStart_toStartOf="@+id/clFavourite"
+                app:layout_constraintTop_toTopOf="@+id/clFavourite"
+                app:layout_constraintVertical_bias="1" />
+
+            <ImageView
+                android:id="@+id/ivDictionary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_11sdp"
+                android:src="@drawable/ic_favorite"
+                app:layout_constraintBottom_toTopOf="@+id/tvFavourite"
+                app:layout_constraintEnd_toEndOf="@+id/clFavourite"
+                app:layout_constraintStart_toStartOf="@+id/clFavourite"
+                app:layout_constraintTop_toTopOf="@+id/clFavourite" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <FrameLayout
+        android:id="@+id/adViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ad_bg_banner"
+        android:padding="@dimen/_2sdp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmerLayoutBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include layout="@layout/size_native_small_shimmer" />
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

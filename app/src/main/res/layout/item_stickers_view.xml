@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/_5sdp"
+    android:elevation="@dimen/_10sdp"
+    app:cardCornerRadius="@dimen/_10sdp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="@dimen/_3sdp">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/txtProgress"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="@font/lexend_bold"
+            android:gravity="center"
+            android:text=""
+            android:background="#CC000000"
+            android:elevation="@dimen/_1sdp"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/_16ssp"
+            android:visibility="invisible"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/txtPackName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lexend_bold"
+            android:gravity="center_vertical"
+            android:text="Pack Name"
+            android:textColor="#0F0F0F"
+            android:textSize="@dimen/_16ssp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/txtSize"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lexend_extralight"
+            android:gravity="center_vertical"
+            android:text="Pack Size"
+            android:textColor="#0F0F0F"
+            android:textSize="@dimen/_12ssp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtPackName" />
+
+        <ImageView
+            android:id="@+id/ivSticker"
+            android:layout_width="@dimen/_130sdp"
+            android:layout_height="@dimen/_130sdp"
+            android:layout_marginVertical="@dimen/_5sdp"
+            android:src="@drawable/ic_no_stickers"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtSize" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/txtAddSticker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/_5sdp"
+            android:background="@drawable/ic_add_sticker_bg"
+            android:drawableEnd="@drawable/ic_add"
+            android:drawablePadding="@dimen/_5sdp"
+            android:fontFamily="@font/lexend_medium"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/_10sdp"
+            android:text="@string/label_add"
+            android:textColor="#0F0F0F"
+            android:textSize="@dimen/_16ssp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivSticker" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/txtStickerAdded"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/_5sdp"
+            android:background="@drawable/ic_add_sticker_bg"
+            android:drawableEnd="@drawable/ic_subscription_tick"
+            android:drawablePadding="@dimen/_5sdp"
+            android:fontFamily="@font/lexend_medium"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/_10sdp"
+            android:text="Added"
+            android:textColor="#0F0F0F"
+            android:textSize="@dimen/_16ssp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivSticker" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

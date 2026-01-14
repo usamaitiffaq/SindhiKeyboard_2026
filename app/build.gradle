@@ -1,0 +1,200 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.com.google.gms.google.services)
+    alias(libs.plugins.com.google.firebase.crashlytics)
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
+    alias(libs.plugins.androidx.navigation.safeargs)
+    alias(libs.plugins.com.google.firebase.perf)
+    alias(libs.plugins.kotlin.kapt)
+}
+
+android {
+    namespace 'com.sindhi.urdu.english.keybad'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.sindhi.urdu.english.keybad"
+        minSdk 23
+        targetSdk 36
+        versionCode 62
+        versionName '5.8'
+
+        setProperty("archivesBaseName","SindhiKeyboard_VN" + versionName + "("+versionCode+")_" + new Date().format('dd-MM-YYYY'))
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            keyAlias = "bestappsolution"
+            keyPassword = "bestappsolution"
+            storeFile = file("E:\\SOT-SindhiKeyboard\\bestappsolution.keystore")
+            storePassword = "bestappsolution"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            manifestPlaceholders = [crashlyticsCollectionEnabled:"true"]
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue "string", "ShowPopups", '"false"'
+            resValue "string", "admob_app_id", '"ca-app-pub-3747520410546258~6769204044"'
+            resValue "string", "interstitial", '"ca-app-pub-3747520410546258/8061968598"'
+            resValue "string", "admob_native", '"ca-app-pub-3747520410546258/2241847463"'
+
+
+            resValue "string", "MINTEGRAL_APP_ID", '"373617"'
+            resValue "string", "MINTEGRAL_APP_KEY", '"af82803f3b7ce492df493de280ee8bf3"'
+            resValue "string", "banner_size_native_keyboard", '"ca-app-pub-3747520410546258/5577098379"'
+            resValue "string", "admob_native_themes", '"ca-app-pub-3747520410546258/2809641910"'
+            resValue "string", "admob_native_home", '"ca-app-pub-3747520410546258/4721264045"'
+            resValue "string", "admob_native_conversation", '"ca-app-pub-3747520410546258/7012610803"'
+            resValue "string", "admob_app_open", '"ca-app-pub-3747520410546258/7925749832"'
+            resValue "string", "admob_banner_inside", '"ca-app-pub-3747520410546258/9574135470"'
+            resValue "string", "ADMOB_SPLASH_INTERSTITIAL", '"ca-app-pub-3747520410546258/3958584668"'
+            resValue "string", "ADMOB_SPLASH_RESUME", '"ca-app-pub-3747520410546258/7897829670"'
+            resValue "string", "ADMOB_BANNER_SPLASH", '"ca-app-pub-3747520410546258/3207598018"'
+            resValue "string", "ADMOB_NATIVE_LANGUAGE_1", '"ca-app-pub-3747520410546258/2412008208"'
+            resValue "string", "ADMOB_NATIVE_LANGUAGE_2", '"ca-app-pub-3747520410546258/9581434677"'
+            resValue "string", "ADMOB_NATIVE_SURVEY_1", '"ca-app-pub-3747520410546258/1743484865"'
+            resValue "string", "ADMOB_NATIVE_SURVEY_2", '"ca-app-pub-3747520410546258/9019339653"'
+            resValue "string", "ADMOB_NATIVE_WALKTHROUGH_1", '"ca-app-pub-3747520410546258/8117321523"'
+            resValue "string", "ADMOB_NATIVE_WALKTHROUGH_FULLSCR", '"ca-app-pub-3747520410546258/1098926537"'
+            resValue "string", "ADMOB_NATIVE_WALKTHROUGH_3", '"ca-app-pub-3747520410546258/7706257983"'
+            resValue("string", "ADMOB_NATIVE_WALKTHROUGH_2", "ca-app-pub-3747520410546258/4329107991")
+            resValue("string", "ADMOB_INTERSTITIAL_LETS_START", "ca-app-pub-3747520410546258/3016026325")
+            resValue "string", "MINTEGRAL_BANNER_KEYPAD", '"2339869-5085280"'
+
+        }
+
+        debug {
+            manifestPlaceholders = [crashlyticsCollectionEnabled:"false"]
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            resValue "string", "ShowPopups", '"true"'
+            resValue "string", "admob_app_id", '"ca-app-pub-3940256099942544~3347511713"'
+            resValue "string", "MINTEGRAL_APP_ID", '"373617"'
+            resValue "string", "MINTEGRAL_APP_KEY", '"af82803f3b7ce492df493de280ee8bf3"'
+            resValue "string", "interstitial", '"ca-app-pub-3940256099942544/1033173712"'
+            resValue "string", "admob_native", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "banner_size_native_keyboard", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "admob_native_themes", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "admob_native_home", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "admob_native_conversation", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "admob_app_open", '"ca-app-pub-3940256099942544/9257395921"'
+
+            resValue "string", "admob_banner_inside", '"ca-app-pub-3940256099942544/9214589741"'
+            resValue "string", "BANNER_BIDDING", '"ca-app-pub-3940256099942544/9214589741"'
+//ca-app-pub-3747520410546258/3207598018
+            resValue "string", "ADMOB_SPLASH_INTERSTITIAL", '"ca-app-pub-3940256099942544/1033173712"'
+            resValue "string", "ADMOB_SPLASH_RESUME", '"ca-app-pub-3940256099942544/9257395921"'
+            resValue "string", "ADMOB_BANNER_SPLASH", '"ca-app-pub-3940256099942544/9214589741"'
+            resValue "string", "ADMOB_NATIVE_LANGUAGE_1", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "ADMOB_NATIVE_LANGUAGE_2", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "ADMOB_NATIVE_SURVEY_1", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "ADMOB_NATIVE_SURVEY_2", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "ADMOB_NATIVE_WALKTHROUGH_1", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "ADMOB_NATIVE_WALKTHROUGH_FULLSCR", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "ADMOB_NATIVE_WALKTHROUGH_3", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue("string", "ADMOB_NATIVE_WALKTHROUGH_2", "ca-app-pub-3940256099942544/2247696110")
+            resValue("string", "ADMOB_INTERSTITIAL_LETS_START", "ca-app-pub-3940256099942544/1033173712")
+
+            resValue "string", "INTERSTITIAL_INSIDE_BIDDING", '"ca-app-pub-3940256099942544/1033173712"'
+            resValue "string", "NATIVE_INSIDE_BIDDING", '"ca-app-pub-3940256099942544/2247696110"'
+            resValue "string", "BANNER_BIDDING", '"ca-app-pub-3940256099942544/9214589741"'
+            resValue "string", "MINTEGRAL_BANNER_KEYPAD", '"2339869-5085280"'
+
+
+        }
+    }
+
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures{
+        buildConfig = true
+        viewBinding = true
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.15'
+    }
+}
+
+dependencies {
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.androidx.activity
+    implementation libs.androidx.constraintlayout
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+    implementation libs.firebase.core
+    implementation libs.firebase.messaging
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.crashlytics
+    implementation(libs.firebase.perf)
+    implementation libs.play.services.ads
+    implementation libs.app.update.ktx
+    implementation libs.androidx.lifecycle.livedata.ktx
+    implementation libs.androidx.lifecycle.viewmodel.ktx
+    implementation libs.androidx.navigation.fragment.ktx
+    implementation libs.androidx.navigation.ui.ktx
+    implementation libs.androidx.lifecycle.process
+    kapt libs.androidx.lifecycle.compiler
+    implementation libs.ssp.android
+    implementation libs.sdp.android
+    implementation libs.lottie
+    implementation libs.groupie
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.room.ktx
+    kapt libs.androidx.room.compiler
+    implementation libs.androidx.browser
+    implementation libs.glide
+    implementation libs.converter.gson
+    implementation libs.retrofit
+    implementation(libs.kotlinx.coroutines.core)
+    implementation libs.androidx.preference.ktx
+    implementation libs.dexter
+//    implementation(libs.billing.ktx)
+    implementation libs.library
+    api libs.commons.io
+    implementation libs.androidx.activity.compose
+    implementation libs.androidx.compose.runtime.livedata
+    implementation platform(libs.compose.bom)
+    implementation libs.androidx.constraintlayout.compose
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.compose.ui.graphics
+    /*implementation 'androidx.compose.ui:ui-tooling-preview'*/
+    implementation libs.androidx.compose.material3
+    implementation libs.androidx.emoji2.emojipicker
+    androidTestImplementation platform(libs.compose.bom)
+    androidTestImplementation libs.androidx.ui.test.junit4
+    debugImplementation libs.androidx.ui.tooling
+    debugImplementation libs.androidx.ui.test.manifest
+    implementation libs.okhttp
+    implementation libs.shimmer
+    implementation libs.sot.fof.andadslib
+    implementation libs.colorpicker
+    implementation(libs.mintegral)
+    implementation(libs.pangle)
+    implementation(libs.applovin)
+    implementation libs.zt.zip
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation 'com.android.billingclient:billing-ktx:6.1.0'
+}

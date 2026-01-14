@@ -1,0 +1,344 @@
+package com.sindhi.urdu.english.keybad.sindhikeyboard.ui.activities
+
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import android.util.DisplayMetrics
+import android.util.Log
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowInsets
+import android.view.WindowManager
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import androidx.recyclerview.widget.GridLayoutManager
+import com.bumptech.glide.Glide
+import com.google.ads.mediation.admob.AdMobAdapter
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.LoadAdError
+import com.manual.mediation.library.sotadlib.activities.AppCompatBaseActivity
+import com.manual.mediation.library.sotadlib.utils.NetworkCheck
+import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
+import com.sindhi.urdu.english.keybad.BuildConfig
+import com.sindhi.urdu.english.keybad.R
+import com.sindhi.urdu.english.keybad.databinding.ActivityStickersDetailsBinding
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NativeMaster
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NewNativeAdClass
+import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.blockingClickListener
+import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerDataCache
+import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerDataCache.downloadInProgressMap
+import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerDataCache.progressMap
+import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerPackData
+import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerViewModel
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.adapters.StickersDetailsAdapter
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_STICKER_DETAILS
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_OVER_ALL
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_STICKERS_DETAILS
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.OVERALL_BANNER_RELOADING
+
+
+class StickersDetailsActivity : AppCompatBaseActivity() {
+    private lateinit var binding: ActivityStickersDetailsBinding
+    val stickerViewModel: StickerViewModel by lazy { StickerViewModel() }
+    var selectedIndexNumber = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityStickersDetailsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        hideSystemUIUpdated()
+        supportActionBar?.hide()
+
+        setStatusBarColor(this@StickersDetailsActivity,resources.getColor(R.color.maroon_500))
+
+        binding.shimmerLayoutStickerDetails.startShimmer()
+        selectedIndexNumber = intent.getIntExtra("selectedIndexNumber",0)
+        if (!NetworkCheck.isNetworkAvailable(this)) {
+            Toast.makeText(this,"No Internet!", Toast.LENGTH_LONG).show()
+            noInternet()
+        }
+        fetchData()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.clStickerShow.visibility == View.GONE) {
+                    startActivity(Intent(this@StickersDetailsActivity, StickersViewActivity::class.java)
+                        .putExtra("From",intent.getStringExtra("From"))
+                        .putExtra("MoveTo",intent.getStringExtra("MoveTo"))
+                    )
+                    finish()
+                } else  {
+                    binding.clStickerShow.visibility = View.GONE
+                }
+            }
+        })
+
+        if (StickerDataCache.stickerPackData != null) {
+            binding.txtPackName.text = StickerDataCache.stickerPackData!!.sticker_packs[selectedIndexNumber].name
+            binding.txtSize.text = StickerDataCache.stickerPackData!!.sticker_packs[selectedIndexNumber].stickers_list_size
+
+            updateProgressViews()
+        }
+
+        binding.txtAddSticker.blockingClickListener {
+            if (StickerDataCache.stickerPackData != null) {
+                downloadInProgressMap[StickerDataCache.stickerPackData!!.sticker_packs[selectedIndexNumber].name] = true
+                binding.txtProgress.text = getString(R.string.label_starting_download)
+                binding.txtProgress.visibility = View.VISIBLE
+                stickerViewModel.downloadStickerPack(StickerDataCache.stickerPackData!!.sticker_packs[selectedIndexNumber],this)
+            }
+        }
+
+        stickerViewModel.downloadProgress.observe(this) { (packName, progress) ->
+            Log.i("DownloadWorkDetails", "$packName: $progress")
+            progressMap[packName] = progress
+            updateProgressViews()
+        }
+
+        binding.ivBackPress.blockingClickListener {
+            onBackPressed()
+        }
+
+        binding.clStickerShow.blockingClickListener {
+            if (binding.clStickerShow.visibility == View.VISIBLE) {
+                binding.clStickerShow.visibility = View.GONE
+            }
+        }
+    }
+
+    fun setStatusBarColor(activity: Activity, color: Int) {
+        val window = activity.window
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) { // Android 15+
+            window.decorView.setOnApplyWindowInsetsListener { view, insets ->
+                val statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars())
+                view.setBackgroundColor(color)
+
+                // Adjust padding to avoid overlap
+                view.setPadding(0, statusBarInsets.top, 0, 0)
+                insets
+            }
+        } else {
+            // For Android 14 and below
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = color
+        }
+
+//        // If you want to keep track of current color in a property:
+//        currentStatusBarColor = color
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (NetworkCheck.isNetworkAvailable(this)
+            && getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(NATIVE_STICKERS_DETAILS,"ON").equals("ON",true)) {
+            binding.nativeAdContainerAd.visibility = View.VISIBLE
+            binding.separator.visibility=View.VISIBLE
+            loadAdmobNativeAd()
+        } else if (NetworkCheck.isNetworkAvailable(this)
+            
+            && getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(BANNER_STICKER_DETAILS,"ON").equals("ON",true)) {
+            binding.shimmerLayoutBanner.startShimmer()
+            binding.shimmerLayoutBanner.visibility = View.VISIBLE
+            binding.adViewContainer.visibility = View.VISIBLE
+            binding.separator.visibility=View.VISIBLE
+            loadAdmobCollapsibleBannerAd()
+        } else {
+            binding.shimmerLayoutBanner.visibility = View.GONE
+            binding.nativeAdContainerAd.visibility = View.GONE
+            binding.adViewContainer.visibility = View.GONE
+            binding.separator.visibility=View.GONE
+        }
+
+    }
+
+    private fun loadAdmobNativeAd() {
+        val pref =getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+        val adId  =if (!BuildConfig.DEBUG){
+            pref.getString(NATIVE_OVER_ALL,"ca-app-pub-3747520410546258/1702944653")
+        }
+        else{
+            resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
+        }
+        NewNativeAdClass.checkAdRequestAdmob(
+            mContext = this,
+            fragmentName = "StickersDetailsActivity",
+            adId =adId!!, // this.resources.getString(R.string.admob_native),
+            isMedia = false,
+            isMediaOnLeft = false,
+            adContainer = binding.nativeAdContainerAd,
+            isMediumAd = false,
+            onFailed = {
+                binding.nativeAdContainerAd.visibility = View.GONE
+                binding.separator.visibility=View.GONE
+            },
+            onAddLoaded = {
+                binding.shimmerLayout.stopShimmer()
+                binding.shimmerLayout.visibility = View.GONE
+                binding.separator.visibility=View.VISIBLE
+            })
+    }
+
+    private fun loadAdmobCollapsibleBannerAd() {
+        if (NativeMaster.collapsibleBannerAdMobHashMap!!.containsKey("StickersDetailsActivity")) {
+            val collapsibleAdView: AdView? = NativeMaster.collapsibleBannerAdMobHashMap!!["StickersDetailsActivity"]
+            binding.shimmerLayoutBanner.stopShimmer()
+            binding.shimmerLayoutBanner.visibility = View.GONE
+            binding.adViewContainer.removeView(binding.shimmerLayoutBanner)
+            binding.separator.visibility=View.VISIBLE
+
+            val parent = collapsibleAdView?.parent as? ViewGroup
+            parent?.removeView(collapsibleAdView)
+
+            binding.adViewContainer.addView(collapsibleAdView)
+        } else {
+            loadCollapsibleBanner()
+        }
+    }
+
+    private fun loadCollapsibleBanner() {
+        val adView = AdView(this)
+        adView.setAdSize(adSize)
+        val pref =getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+        val adId  =if (!BuildConfig.DEBUG){
+            pref.getString(BANNER_INSIDE,"ca-app-pub-3747520410546258/1697692330")
+        }
+        else{
+            resources.getString(R.string.ADMOB_BANNER_SPLASH)
+        }
+        adView.adUnitId = adId!!//getString(R.string.admob_banner_inside)
+        val extras = Bundle()
+        extras.putString("collapsible", "bottom")
+
+        val adRequest = AdRequest.Builder()
+            .addNetworkExtrasBundle(AdMobAdapter::class.java, extras)
+            .build()
+
+        adView.loadAd(adRequest)
+        adView.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                binding.adViewContainer.removeAllViews()
+                binding.adViewContainer.addView(adView)
+
+                if (getSharedPreferences("RemoteConfig", MODE_PRIVATE).getString(OVERALL_BANNER_RELOADING, "SAVE").equals("SAVE")) {
+                    NativeMaster.collapsibleBannerAdMobHashMap!!["StickersDetailsActivity"] = adView
+                }
+                binding.separator.visibility=View.VISIBLE
+                binding.shimmerLayoutBanner.stopShimmer()
+                binding.shimmerLayoutBanner.visibility = View.GONE
+            }
+
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                binding.shimmerLayoutBanner.stopShimmer()
+                binding.shimmerLayoutBanner.visibility = View.GONE
+                binding.separator.visibility=View.GONE
+            }
+
+            override fun onAdOpened() {
+
+            }
+
+            override fun onAdClicked() {
+
+            }
+
+            override fun onAdClosed() {
+
+            }
+        }
+    }
+
+    private val adSize: AdSize
+        get() {
+            val display = windowManager.defaultDisplay
+            val outMetrics = DisplayMetrics()
+            display.getMetrics(outMetrics)
+
+            val density = outMetrics.density
+
+            var adWidthPixels = binding.adViewContainer.width.toFloat()
+            if (adWidthPixels == 0f) {
+                adWidthPixels = outMetrics.widthPixels.toFloat()
+            }
+
+            val adWidth = (adWidthPixels / density).toInt()
+            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth)
+        }
+
+    private fun updateProgressViews() {
+        val progress = progressMap[StickerDataCache.stickerPackData!!.sticker_packs[selectedIndexNumber].name] ?: getString(R.string.label_starting_download)
+        binding.txtProgress.text = progress
+
+        val isDownloadInProgress = downloadInProgressMap[StickerDataCache.stickerPackData!!.sticker_packs[selectedIndexNumber].name] ?: false
+        if (!isDownloadInProgress) {
+            binding.txtAddSticker.visibility = View.VISIBLE
+            binding.txtProgress.visibility = View.GONE
+        } else {
+            binding.txtAddSticker.visibility = View.GONE
+            if (progress != "Download Complete") {
+                binding.txtProgress.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun fetchData() {
+        if (StickerDataCache.stickerPackData == null) {
+            if (NetworkCheck.isNetworkAvailable(this)) {
+                stickerViewModel.fetchStickers()
+            }
+        } else {
+            StickerDataCache.stickerPackData.let {
+                Glide.with(this)
+                    .load(StickerDataCache.stickerPackData!!.sticker_packs[selectedIndexNumber].tray_image_file)
+                    .placeholder(R.drawable.ic_no_stickers)
+                    .into(binding.ivStickerTrayImage)
+            }
+            populateAdapter(StickerDataCache.stickerPackData!!)
+        }
+
+        stickerViewModel.stickerPackData.observe(this) { stickerPackData ->
+            if (stickerPackData != null) {
+                Log.e("DownloadWork", "stickerPackData != null")
+                populateAdapter(stickerPackData)
+            } else {
+                Log.e("DownloadWork", "stickerPackData == null")
+            }
+        }
+    }
+
+    private fun populateAdapter(stickerPackData: StickerPackData) {
+        val selectedPackDetails = stickerPackData.sticker_details[selectedIndexNumber]
+        val stickers = selectedPackDetails.stickers.map { it.image_file_url }
+
+        val adapter = StickersDetailsAdapter(stickers) { stickerUrl ->
+
+            Glide.with(binding.root.context)
+                .load(stickerUrl)
+                .placeholder(R.drawable.ic_no_stickers)
+                .into(binding.ivStickerShow)
+
+            binding.clStickerShow.visibility = View.VISIBLE
+
+            // Toast.makeText(this, "Clicked: $stickerUrl", Toast.LENGTH_SHORT).show()
+        }
+        binding.rvStickersDetails.adapter = adapter
+        binding.rvStickersDetails.layoutManager = GridLayoutManager(this, 4)
+        noInternet()
+    }
+
+    private fun noInternet() {
+        binding.shimmerLayoutStickerDetails.stopShimmer()
+        binding.shimmerLayoutStickerDetails.visibility = View.GONE
+    }
+}

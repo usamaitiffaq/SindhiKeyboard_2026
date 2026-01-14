@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Sindhi Keyboard</string>
+    <string name="str_dont_worry">فکر نہ کریں، سندھی کی بورڈ کے استعمال سے کبھی بھی ذاتی ڈیٹا ریکارڈ نہیں کیا جاتا</string>
+
+    <string name="str_test">یہاں تلاش کریں</string>
+    <string name="label_history">گذشتہ واقعات</string>
+    <string name="menu_feedback">رائے دیں</string>
+
+    <string name="ime_name" translatable="false">Sindhi Keyboard</string>
+
+    <string name="title_home">ہوم</string>
+    <string name="RateUs">ہمیں ریٹ کریں</string>
+    <string name="ShareApp">ایپ شیئر کریں</string>
+    <string name="MoreApp">مزید ایپس</string>
+    <string name="enable_keyboard">کی بورڈ فعال کریں</string>
+    <string name="set_keyboard">کی بورڈ سیٹ کریں</string>
+    <string name="select_lang">زبان منتخب کریں</string>
+
+    <string name="next">آگے</string>
+    <string name="skip">چھوڑیں</string>
+
+    <string name="product_id" translatable="false">allremoveads</string>
+    <string name="licence_key" translatable="false">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgm66jC2EzS6T9cmLEdWzWSEktXwMuTSBLd+Q1kA03OZa5ZXuHyNiDAHwNr4d6+0qqR31Bz1+/ZO8/mNI6Pc/nBx3nFiVaLjABaxsG3F4XH5B7PONKMyvGYEunzZC5dey1kNIZYbK0K55FFIkTH5XtoqJOUUvio7tsV0two9n+mR6k40LiTmSF+d1XKuOcz/y+fMOQtwqG5uSXFswlpqRRiVyC6yZwLF4A+qluj+0XL+VmI+gL7I5MRKg+j0mAmgNkPwV17EfHARvMx8RFZZBSb9UOzT8ixeSxQq3GyAPj+yEx1oPBLpDHhmh0isIKgdLHk/zfRc0/Bcsz3ZHEWfTrwIDAQAB</string>
+
+    <string name="str_u1" translatable="false">بے وفا</string>
+    <string name="str_status_2" translatable="false">وطن</string>
+
+    <string name="ads_consent">اشتہارات کی منظوری</string>
+    <string name="splitPattern" translatable="false">!@#*!@#</string>
+    <string name="privacy_policy"><a href="https://sites.google.com/view/privacypolicysoloftechappsol">رازداری کی پالیسی</a></string>
+    <string name="ad_is_loading">اشتہار لوڈ ہو رہا ہے…</string>
+    <string name="activate_sindhi_keyboard">سندھی کی بورڈ کو فعال کریں</string>
+    <string name="switch_sindhi_keyboard">سندھی کی بورڈ سوئچ کریں</string>
+    <string name="set_up_easy_sindhi_keyboard">آسان سندھی کی بورڈ سیٹ اپ کریں</string>
+
+    <string name="edit_layout">متن کی تدوین</string>
+    <string name="emoji_layout">ایموجی</string>
+    <string name="HusnEguftar_layout"> حُسن گفتار </string>
+
+    <string name="label_app_language">ایپ کی زبان</string>
+    <string name="label_share">شیئر کریں</string>
+
+    <string name="label_apply_theme">تھیم لاگو کریں</string>
+
+    <!-- Settings Screen -->
+    <string name="shareFb">شیئر کریں اور رائے دیں</string>
+    <string name="enableVoiceTyping">آواز کے ذریعے ٹائپنگ استعمال کریں</string>
+    <string name="number_row">نمبر قطار</string>
+    <string name="soundOnKeyPress">کی پریس پر آواز</string>
+    <string name="longPressForSymbols">علامات کے لیے لمبی پریس</string>
+    <string name="showPopUp">کی پریس پر پاپ اپ دکھائیں</string>
+    <string name="vibration">کی پریس پر وائبریشن</string>
+    <string name="gesture_delete">اشارے کے ساتھ حذف کریں</string>
+    <string name="rate_us">ہمیں ریٹ کریں</string>
+    <string name="more_apps">مزید ایپس</string>
+    <string name="label_themes">تھیمز</string>
+    <string name="label_keyboard_settings">کی بورڈ سیٹنگز</string>
+    <string name="label_test_line">اپنے کی بورڈ کو آزمائیں</string>
+    <string name="label_test_theme">تھیم کا ٹیسٹ کریں</string>
+
+    <string name="label_message">پیغام</string>
+    <string name="label_next">اگلا</string>
+    <string name="done">مکمل</string>
+    <string name="label_tap_here_to_exit">باہر نکلنے کے لئے یہاں دبائیں</string>
+    <string name="see_more">مزید دیکھیں</string>
+    <string name="explore_more">مزید دریافت کریں</string>
+    <string name="label_sindhi_keyboard">سندھی کی بورڈ</string>
+    <string name="label_daily_status">روزانہ کی حیثیت</string>
+    <string name="label_sindhi_status">سندھی اشعار</string>
+    <string name="label_settings">تنسیبات</string>
+    <string name="label_translation">ترجمہ</string>
+    <string name="label_speechTotext">تقریر سے متن</string>
+    <string name="label_conversation">گفتگو</string>
+    <string name="label_explore_feature">خصوصیت دریافت کریں</string>
+    <string name="label_we_build_what_you_desire">ہم وہ بناتے ہیں جو آپ چاہتے ہیں</string>
+    <string name="label_select_features_fit_your_needs">ایسی خصوصیات کا انتخاب کریں جو آپ کی ضروریات کو پورا کریں</string>
+    <string name="label_wallpapers">وال پیپرز</string>
+    <string name="label_sindhi_editor">سندھی ایڈیٹر</string>
+    <string name="label_live_themes">لائیو تھیمز</string>
+    <string name="label_photo_on_keyboard">فوٹو کی بورڈ</string>
+    <string name="label_photo_translator">فوٹو مترجم</string>
+    <string name="label_instant_stickers">فوری اسٹیکرز</string>
+    <string name="initializing_consent_setup">زبان کا انتخاب چھوڑیں</string>
+    <string name="label_w_1_descrption">اپنی سندھی کی بورڈ کو خوبصورت اور دلکش تھیمز کے ساتھ حسب ضرورت بنائیں۔</string>
+    <string name="label_w_2_descrption">خوبصورت سندھی زبان کے اظہار کے ساتھ اپنی گفتگو کو بہتر بنائیں۔</string>
+    <string name="label_w_3_descrption">سندھی میں ٹائپ کرتے وقت مزاحیہ اسٹیکرز اور ایموجیز کے ساتھ اپنی بات کو ظاہر کریں۔</string>
+    <string name="label_disable">غیر فعال کریں</string>
+    <string name="label_remove_ads">اشتہارات ہٹائیں</string>
+    <string name="label_speech_to_n_text">تقریر سے\nمتن</string>
+    <string name="label_share_app">ایپ شیئر کریں</string>
+    <string name="label_dictionary">لغت</string>
+    <string name="label_favourite">پسندیدہ</string>
+    <string name="label_coming_soon">جلد آرہا ہے</string>
+    <string name="label_text_resize">Text Resize</string>
+    <string name="label_text_reverse">Text Reverse</string>
+    <string name="label_text_translator">Text Translator</string>
+    <string name="label_text_to_audio_file">Text to audio file</string>
+    <string name="ad">Ad</string>
+</resources>
