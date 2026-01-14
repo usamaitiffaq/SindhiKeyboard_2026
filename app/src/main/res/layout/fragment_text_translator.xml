@@ -24,7 +24,7 @@ tools:context=".sindhikeyboard.ui.fragments.TextTranslatorFragment">
             android:id="@+id/flLanguages"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#5A0000"
+            android:background="#770606"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -127,7 +127,7 @@ tools:context=".sindhikeyboard.ui.fragments.TextTranslatorFragment">
             android:layout_marginHorizontal="@dimen/_3sdp"
             android:layout_marginVertical="@dimen/_3sdp"
             android:padding="10dp"
-            android:visibility="visible"
+            android:visibility="gone"
             app:cardBackgroundColor="@color/nativeAdBackground"
             app:cardElevation="0dp"
             app:layout_constraintBottom_toTopOf="@+id/clSource"
@@ -262,7 +262,7 @@ tools:context=".sindhikeyboard.ui.fragments.TextTranslatorFragment">
                 app:layout_constraintEnd_toStartOf="@+id/btncopytext1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/glTranslated1"
-                app:srcCompat="@drawable/ic_speaker" />
+                app:srcCompat="@drawable/ic_speak_text" />
 
             <ImageView
                 android:id="@+id/btncopytext1"
@@ -273,7 +273,7 @@ tools:context=".sindhikeyboard.ui.fragments.TextTranslatorFragment">
                 app:layout_constraintEnd_toStartOf="@+id/btnshare"
                 app:layout_constraintStart_toEndOf="@+id/btnspeaker1"
                 app:layout_constraintTop_toBottomOf="@+id/glTranslated1"
-                app:srcCompat="@drawable/ic_copy" />
+                app:srcCompat="@drawable/ic_copy_text" />
 
             <ImageView
                 android:id="@+id/btnshare"
