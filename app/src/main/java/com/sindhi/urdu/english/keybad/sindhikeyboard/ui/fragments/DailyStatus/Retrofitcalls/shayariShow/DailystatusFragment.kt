@@ -1,5 +1,6 @@
 package com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.DailyStatus.Retrofitcalls.shayariShow
 
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -18,7 +19,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.myproject.todoappwithnodejs.retrofitgenericresponse.Baseresponse
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentDailystatusBinding
@@ -38,6 +38,8 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.DailyStatus.Re
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.ViewmodelFactory.staffviewmodelsfactory
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.DailyStatus.Retrofitcalls.models.Cat_Update
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.DailyStatus.Retrofitcalls.models.dailystatusResponse
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import okhttp3.OkHttpClient
 import okhttp3.Response
 
@@ -51,6 +53,7 @@ class DailystatusFragment : Fragment(), shayaricategoryclicklistner {
     lateinit var dailystatuslist:ArrayList<dailystatusResponse>
     lateinit var adapter: MainAdapter
     var bundle = Bundle()
+    private var isPurchase = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentDailystatusBinding.inflate(inflater, container, false)
@@ -64,7 +67,7 @@ class DailystatusFragment : Fragment(), shayaricategoryclicklistner {
         val BASE_URL = "https://solutionoftechnologies.com/daily_urdu_qoutes/"
         val cacheSize = (10 * 1024 * 1024).toLong()
         val dailystatusdao = retrofitinstance(cacheSize,requireContext(), BASE_URL = BASE_URL).getinstance().create(Dictionarydao::class.java)
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
+        isPurchase = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)?.getBoolean(IS_PURCHASED, false) == true
         val dictionaryrepository = dictionaryrepository(dailystatusdao)
         dictionaryViewModel= ViewModelProvider(this,
             staffviewmodelsfactory(requireActivity().application,requireActivity(),navController,dictionaryrepository)
@@ -142,7 +145,6 @@ class DailystatusFragment : Fragment(), shayaricategoryclicklistner {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         isNavControllerAdded()
 
         val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)

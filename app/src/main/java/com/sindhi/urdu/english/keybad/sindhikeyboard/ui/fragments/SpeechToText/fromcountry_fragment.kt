@@ -18,9 +18,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.newvoicetyping.ui.Speechtotext.CountryCountry
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
@@ -31,7 +29,9 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NewNativeAdClass
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.TinyDB
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.PURCHASE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_CONVERSATION
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import java.util.Locale
 
 class fromcountry_fragment : Fragment() {
@@ -56,7 +56,7 @@ class fromcountry_fragment : Fragment() {
         bundle.putString("LanguageChangeFragment","LanguageChangeFragment")
         ApplicationClass.firebaseAnalyticsEventsLog.logEvent("event_language_change", bundle)
 
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
+        isPurchased = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)?.getBoolean(IS_PURCHASED, false) == true
         val mSharedPreferences = android.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
         val editor = mSharedPreferences.edit()
         adapter = countryrvadapter {
@@ -153,7 +153,6 @@ class fromcountry_fragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         isNavControllerAdded()
 
         requireActivity().findViewById<SwitchCompat>(R.id.switchButtonConversation).let { it?.visibility = View.INVISIBLE }

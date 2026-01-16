@@ -22,7 +22,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.preference.PreferenceManager
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentThemesApplyBinding
@@ -37,8 +36,10 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.CustomFirebaseEvents
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.PURCHASE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_OVER_ALL
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_THEMES
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import kotlinx.coroutines.launch
 
 class ThemesApplyFragment : Fragment() {
@@ -135,7 +136,6 @@ class ThemesApplyFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         isNavControllerAdded()
         val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
         if (ivClose != null) {
@@ -161,7 +161,7 @@ class ThemesApplyFragment : Fragment() {
 
         CustomFirebaseEvents.activitiesFragmentEvent(requireActivity(), "ThemesApplyFragment")
 
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
+        isPurchased = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)?.getBoolean(IS_PURCHASED, false) == true
         if (isPurchased == true) {
             binding.nativeAdContainerAd.visibility = View.GONE
         } else {

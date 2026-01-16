@@ -9,19 +9,20 @@
         android:id="@+id/clSubDiv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingStart="@dimen/_14sdp"
         android:background="?attr/colorPrimary">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/txtSindhiKeyboard"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="@dimen/_5sdp"
             android:drawableTint="@color/White"
             android:fontFamily="@font/lexend_medium"
             android:gravity="start|center_vertical"
             android:text="@string/label_sindhi_keyboard"
             android:textColor="@color/White"
-            android:textSize="@dimen/_15ssp"
+            android:textSize="@dimen/_17ssp"
+
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/g1Toolbar"
             app:layout_constraintStart_toStartOf="parent"
@@ -33,6 +34,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.6" />
+
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clEditing"
@@ -118,6 +120,7 @@
             app:layout_constraintStart_toEndOf="@+id/g1Toolbar"
             app:layout_constraintTop_toTopOf="parent" />
 
+
         <ImageView
             android:id="@+id/ivPremium"
             android:layout_width="@dimen/_25sdp"
@@ -169,7 +172,7 @@
         android:layout_height="0dp"
         android:background="#0A090A"
         android:elevation="@dimen/_10sdp"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -202,7 +205,6 @@
             app:tint="@color/White" />
 
 
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
@@ -211,11 +213,94 @@
         android:layout_height="@dimen/_40sdp"
         android:layout_marginEnd="@dimen/_10sdp"
         android:padding="@dimen/_8sdp"
-        android:visibility="gone"
         android:src="@drawable/ic_settings_new"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.9"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="0.9" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/ivPurchase"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_40sdp"
+        android:layout_marginEnd="@dimen/_5sdp"
+        android:padding="@dimen/_5sdp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ivSettings"
+
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/ic_premium_anim" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clSubscription"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/ivClosePurchase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/_5sdp"
+            android:src="@drawable/ic_close_purchase"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/White" />
+
+        <ImageView
+            android:id="@+id/ivCloseDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/_7sdp"
+            android:src="@drawable/back"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/White" />
+
+
+
+        <TextView
+            android:id="@+id/ivDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/lexend_medium"
+            android:gravity="center"
+            android:text="@string/label_details"
+            android:textColor="@color/White"
+            android:textSize="@dimen/_14ssp"
+            app:drawableEndCompat="@drawable/ic_next_purchase"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/_50sdp"
+            android:fontFamily="@font/lexend_medium"
+            android:gravity="center"
+            android:visibility="gone"
+            android:text="@string/label_details"
+            android:textColor="@color/White"
+            android:textSize="@dimen/_20ssp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

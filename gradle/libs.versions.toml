@@ -3,7 +3,7 @@ activityCompose = "1.11.0"
 agp = "8.13.0"
 applovin = "13.5.0.0"
 appUpdateKtx = "2.1.0"
-billingKtx = "8.0.0"
+billingKtx = "8.2.0"
 browser = "1.9.0"
 commonsIo = "2.20.0"
 composeBomVersion = "2025.10.01"
@@ -29,6 +29,7 @@ lottie = "6.7.1"
 material = "1.13.0"
 activity = "1.11.0"
 constraintlayout = "2.2.1"
+
 
 gms = "4.4.4"
 crashlytics = "3.0.6"
@@ -83,7 +84,6 @@ androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 app-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "appUpdateKtx" }
 applovin = { module = "com.google.ads.mediation:applovin", version.ref = "applovin" }
-#billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billingKtx" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
@@ -118,6 +118,7 @@ ssp-android = { module = "com.intuit.ssp:ssp-android", version.ref = "sspAndroid
 user-messaging-platform = { module = "com.google.android.ump:user-messaging-platform", version.ref = "userMessagingPlatform" }
 zt-zip = { module = "org.zeroturnaround:zt-zip", version.ref = "ztZip" }
 colorpicker = { module = "com.github.QuadFlask:colorpicker", version.ref = "colorpicker" }
+billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billingKtx" }
 
 [plugins]
 

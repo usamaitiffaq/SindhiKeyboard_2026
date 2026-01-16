@@ -11,7 +11,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clHeader"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_40sdp"
+        android:layout_height="@dimen/_60sdp"
         android:background="@color/maroon_200"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -35,10 +35,9 @@
             android:drawableTint="@color/White"
             android:fontFamily="@font/lexend_medium"
             android:gravity="start|center_vertical"
-            android:paddingStart="@dimen/_5sdp"
+            android:textSize="@dimen/_17ssp"
             android:text="@string/label_sticker"
             android:textColor="@color/White"
-            android:textSize="@dimen/_15ssp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/ivBackPress"

@@ -22,7 +22,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.newvoicetyping.ui.Speechtotext.CountryCountry
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
@@ -171,7 +170,6 @@ class tocountry_fragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         isNavControllerAdded()
 
         requireActivity().findViewById<SwitchCompat>(R.id.switchButtonConversation).let { it?.visibility = View.INVISIBLE }

@@ -17,7 +17,6 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentExitScreenBinding
@@ -30,7 +29,9 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.PURCHASE
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.blockingClickListener
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.CustomFirebaseEvents
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.exitScreenThemes.ExitScreenThemes
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_OVER_ALL
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,6 +45,7 @@ class ExitScreenFragment : Fragment() {
     var ivClose: ImageView? = null
     var isPurchased: Boolean? = null
     var doubleBackToExitPressedOnce = false
+    private var isPurchase = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentExitScreenBinding.inflate(inflater, container, false)
@@ -54,7 +56,7 @@ class ExitScreenFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         isNavControllerAdded()
 
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
+        isPurchase = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)?.getBoolean(IS_PURCHASED, false) == true
         val composeView = view.findViewById<ComposeView>(R.id.composeView)
         composeView.setContent {
             ExitScreenThemes(onApplyThemeClick = { theme ->
@@ -176,7 +178,6 @@ class ExitScreenFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         isNavControllerAdded()
 
         ivClose = requireActivity().findViewById(R.id.ivClose)

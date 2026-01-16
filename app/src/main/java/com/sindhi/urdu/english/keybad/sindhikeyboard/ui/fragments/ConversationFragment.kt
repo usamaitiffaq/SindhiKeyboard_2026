@@ -54,7 +54,6 @@ import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
 import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.single.PermissionListener
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.newvoicetyping.ui.Speechtotext.CountryCountry
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
@@ -79,9 +78,11 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.history.roomDb
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.history.roomDb.HistoryViewModel
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.history.roomDb.viewmodelfactory
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_CONVERSATION
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_OVER_ALL
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.OVERALL_BANNER_RELOADING
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import com.xwray.groupie.Item
@@ -226,8 +227,11 @@ class ConversationFragment : Fragment(), TextToSpeech.OnInitListener {
         )[HistoryViewModel::class.java]
 
         tts = TextToSpeech(requireContext(), this, "com.google.android.tts")
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .getBoolean(PURCHASE, false)
+
+
+        isPurchased = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+            ?.getBoolean(IS_PURCHASED, false) == true
+
         adapter = GroupAdapter<GroupieViewHolder>()
         binding.rvConversation.setHasFixedSize(false)
         if (fromlanguageflag == 0 && tolanguageflag == 0) {
@@ -433,7 +437,6 @@ class ConversationFragment : Fragment(), TextToSpeech.OnInitListener {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         requireActivity().findViewById<SwitchCompat>(R.id.switchButtonTTS)
             .let { it?.visibility = View.INVISIBLE }
         val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
@@ -579,8 +582,7 @@ class ConversationFragment : Fragment(), TextToSpeech.OnInitListener {
         val pref = requireContext().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
         val adId = if (!BuildConfig.DEBUG) {
             pref.getString(BANNER_INSIDE, "ca-app-pub-3747520410546258/1697692330")
-        }
-        else {
+        } else {
             resources.getString(R.string.ADMOB_BANNER_SPLASH)
         }
         adView.adUnitId = adId!!//getString(R.string.admob_banner_inside)

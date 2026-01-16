@@ -29,6 +29,7 @@ object RemoteConfigConst {
     const val RESUME_OVER_ALL = "RESUME_OVER_ALL"
     const val NATIVE_KEYPAD = "NATIVE_KEYPAD"
     const val IS_FIRST_TIME = "IS_FIRST_TIME"
+    const val REMOTE_CONFIG = "RemoteConfig"
 
 
     // SOT-Ads-Visibility-Config
@@ -49,6 +50,7 @@ object RemoteConfigConst {
     //    const val ADMOB_INTER_LET_START = "ADMOB_INTER_LET_START"
     const val INTERSTITIAL_LETS_START = "INTERSTITIAL_LETS_START"
     const val IS_PURCHASED = "IS_PURCHASED"
+
 
 
     // SOT-Ads-Mediation-Config
@@ -80,6 +82,8 @@ object RemoteConfigConst {
 
     const val TIMER_NATIVE_F_SRC = "TIMER_NATIVE_F_SRC"
     const val BANNER_POETRY = "BANNER_POETRY"
+    const val NATIVE_TEXT_TRANSLATOR = "NATIVE_TEXT_TRANSLATOR"
+    const val BANNER_THEMES_LIST = "BANNER_THEMES_LIST"
     const val ADS_BANNER_THEMES_TEST = "ADS_BANNER_THEMES_TEST"
     const val ADS_BANNER_HISTORY = "ADS_BANNER_HISTORY"
     const val ADMOB_SPLASH_INTERSTITIAL = "ADMOB_SPLASH_INTERSTITIAL"

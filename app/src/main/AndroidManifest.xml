@@ -47,9 +47,6 @@
         <activity
             android:name=".sindhikeyboard.ui.activities.SplashActivity"
             android:exported="false" />
-        <!-- <activity -->
-        <!-- android:name=".sindhikeyboard.ui.activities.SOTStartActivity" -->
-        <!-- android:exported="false" /> -->
         <activity
             android:name=".sindhikeyboard.ui.activities.StickersDetailsActivity"
             android:exported="false" />

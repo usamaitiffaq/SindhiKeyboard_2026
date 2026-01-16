@@ -17,7 +17,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentShayarishowFragmentBinding
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.ApplicationClass
@@ -125,7 +124,6 @@ class Shayarishow_fragment : Fragment(), generalstatusitemclicklistner {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
         if (ivClose != null) {
             ivClose.visibility = View.INVISIBLE

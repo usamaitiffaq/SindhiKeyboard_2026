@@ -510,7 +510,7 @@ class UrduEditorFragment : Fragment() {
                         if (binding.clTextEditor.visibility == View.VISIBLE) {
                             ivDismissEditing?.performClick()
                         } else if (binding.clTextEditor.visibility == View.GONE || binding.clTextEditor.visibility == View.INVISIBLE) {
-                            clDoneCancel?.visibility = View.INVISIBLE
+                            clDoneCancel?.visibility = View.GONE
                             Log.i("UrduEditorFragment", "setupTextEditorHeader:")
                             changeDialogTitleDescription(
                                 title = ctx.getString(R.string.label_quit_editing),
@@ -836,7 +836,7 @@ class UrduEditorFragment : Fragment() {
             binding.clTextEditor.visibility = View.GONE
             binding.rvFonts.visibility = View.GONE
             binding.clFontsRV.visibility = View.GONE
-            clDoneCancel?.visibility = View.INVISIBLE
+            clDoneCancel?.visibility = View.GONE
 
             val current = currentEditedTextItem
             val selected = binding.textEditorView.selectedTextItem
@@ -880,7 +880,7 @@ class UrduEditorFragment : Fragment() {
         binding.clTextEditor.visibility = View.GONE
         binding.rvFonts.visibility = View.GONE
         binding.clFontsRV.visibility = View.GONE
-        clDoneCancel?.visibility = View.INVISIBLE
+        clDoneCancel?.visibility = View.GONE
 
         if (currentEditedTextItem?.text.isNullOrEmpty() || binding.textEditorView.selectedTextItem?.text.isNullOrEmpty()) {
             handleCloseText()

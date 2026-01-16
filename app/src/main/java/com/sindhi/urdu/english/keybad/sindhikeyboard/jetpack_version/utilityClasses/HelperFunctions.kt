@@ -200,14 +200,63 @@ fun moreApps(context: Context) {
     context.startActivity(marketIntent)
 }
 
-fun composeFeedBackEmail(context: Context) {
-    val emailIntent = Intent(Intent.ACTION_SENDTO)
-    emailIntent.data = Uri.parse("mailto:appsol.soloftech@gmail.com")
-    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feed Back")
+//fun composeFeedBackEmail(context: Context) {
+//    val emailIntent = Intent(Intent.ACTION_SENDTO)
+//    emailIntent.data = Uri.parse("mailto:appsol.soloftech@gmail.com")
+//    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feed Back")
+//    try {
+//        context.startActivity(Intent.createChooser(emailIntent, "Send email using..."))
+//    } catch (e: Exception) {
+//        Toast.makeText(context, "No email clients installed.", Toast.LENGTH_SHORT).show()
+//    }
+//}
+
+ fun composeFeedBackEmail(context: Context) {
+
+    // 1. Get App Name and Version Code
+    var appName = "App"
+    var versionName: String? = "1.0"
     try {
-        context.startActivity(Intent.createChooser(emailIntent, "Send email using..."))
+        val packageManager = context.packageManager
+        val packageInfo = packageManager.getPackageInfo(context.packageName, 0)
+        // Get App Name
+        appName = context.applicationInfo.loadLabel(packageManager).toString()
+        // Get Version Name
+        versionName = packageInfo.versionName
     } catch (e: Exception) {
-        Toast.makeText(context, "No email clients installed.", Toast.LENGTH_SHORT).show()
+        e.printStackTrace()
+    }
+
+    val manufacturer = android.os.Build.MANUFACTURER // e.g., Samsung
+    val model = android.os.Build.MODEL // e.g., SM-G960F
+    val androidVersion = android.os.Build.VERSION.RELEASE // e.g., 12
+    val sdkVersion = android.os.Build.VERSION.SDK_INT // e.g., 31
+
+    val subject = "Feedback: $appName v$versionName"
+
+    val emailBody = """
+    
+    
+    ------------------------------
+    Device Info:
+    Device: $manufacturer $model
+    OS: Android $androidVersion (SDK $sdkVersion)
+    App Version: $versionName
+    """.trimIndent()
+
+    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_EMAIL, arrayOf("farihazafarusa@gmail.com"))
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, emailBody)
+    }
+
+    try {
+        context.startActivity(Intent.createChooser(emailIntent, "Send Feedback via Email"))
+
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(context, "No email clients installed", Toast.LENGTH_SHORT)
+            .show()
     }
 }
 
@@ -216,6 +265,26 @@ fun privacyPolicy(activity: Activity) {
     val customIntent = CustomTabsIntent.Builder()
     customIntent.setToolbarColor(ContextCompat.getColor(activity, R.color.maroon_500))
     openCustomTab(activity, customIntent.build(), Uri.parse(url))
+}
+
+fun unsubscribe(activity: Activity) {
+    val url = "https://support.google.com/googleplay/answer/7018481?co=GENIE.Platform%3DAndroid&hl=en"
+    val customIntent = CustomTabsIntent.Builder()
+   openCustomTab(
+        activity,
+        customIntent.build(),
+        Uri.parse(url)
+    )
+}
+
+fun termsOfService(activity: Activity) {
+    val url = "https://sites.google.com/view/sindhi-keyboard-tos"
+    val customIntent = CustomTabsIntent.Builder()
+    openCustomTab(
+        activity,
+        customIntent.build(),
+        Uri.parse(url)
+    )
 }
 
 fun openAppInPlayStore(context: Context?) {

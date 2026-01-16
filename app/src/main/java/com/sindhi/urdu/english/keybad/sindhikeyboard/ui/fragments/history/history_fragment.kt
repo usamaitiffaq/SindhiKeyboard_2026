@@ -28,7 +28,6 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentHistoryFragmentBinding
@@ -48,6 +47,8 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.history.roomDb
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.ADS_BANNER_HISTORY
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.INTER_OVER_ALL
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 
 class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversationClickListener {
 
@@ -59,11 +60,17 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
     lateinit var wordsHistoryAdapter: HistoryAdapter
     lateinit var conversationHistoryAdapter: HistoryConversationAdapter
     lateinit var conversationExtensionAdapterList: ArrayList<ConversationExtension>
-    companion object { lateinit var conversationExtensionForwardList: ArrayList<ConversationExtension> }
+
+    companion object {
+        lateinit var conversationExtensionForwardList: ArrayList<ConversationExtension>
+    }
+
     var bundle = Bundle()
 
     var conversationMapParent: Map<String, List<ConversationExtension>> = mutableMapOf()
-    var isPurchased: Boolean? = null
+
+    //    var isPurchased: Boolean? = null
+    var isPurchase = false
 
     fun isNavControllerAdded() {
         if (isAdded) {
@@ -71,11 +78,16 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentHistoryFragmentBinding.inflate(inflater, container, false)
         val root: View = binding.root
+        isPurchase = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)?.getBoolean(IS_PURCHASED, false) == true
         checkForLoadBanner()
-        bundle.putString("HistoryFragment","HistoryFragment")
+        bundle.putString("HistoryFragment", "HistoryFragment")
         ApplicationClass.firebaseAnalyticsEventsLog.logEvent("event_history", bundle)
         conversationExtensionAdapterList = ArrayList()
         conversationExtensionForwardList = ArrayList()
@@ -89,10 +101,8 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
         binding.rvConversation.apply { layoutManager = LinearLayoutManager(requireContext()) }
         binding.rvConversation.adapter = conversationHistoryAdapter
 
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .getBoolean(PURCHASE,
-                false
-            )
+
+
         viewModel = ViewModelProvider(
             this,
             viewmodelfactory(requireActivity().application)
@@ -124,7 +134,8 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
                 conversationMapParent = conversationMap
                 for ((key, value) in conversationMap) {
                     for (conversation in value) {
-                        val parts = conversation.conversationName.split(getString(R.string.splitPattern))
+                        val parts =
+                            conversation.conversationName.split(getString(R.string.splitPattern))
                         conversation.conversationName = parts[0]
                     }
                     conversationExtensionAdapterList.add(value[value.size - 1])
@@ -151,7 +162,8 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
         requireActivity().onBackPressedDispatcher
             .addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    val action = history_fragmentDirections.actionHistoryFragmentToTranslationFragment()
+                    val action =
+                        history_fragmentDirections.actionHistoryFragmentToTranslationFragment()
                     navController.navigate(action)
                 }
             })
@@ -184,6 +196,7 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
             ).getString(
                 ADS_BANNER_HISTORY, "ON"
             ).equals("ON", true)
+            && !isPurchase
         ) {
             if (NativeMaster.collapsibleBannerAdMobHashMap!!.containsKey("history")) {
                 val collapsibleAdView: AdView? =
@@ -207,6 +220,7 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
             binding.shimmerLayoutBanner.visibility = View.GONE
         }
     }
+
     /*private val adSize: AdSize
         get() = AdSize.BANNER*/
     private val adSize: AdSize
@@ -223,14 +237,17 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
             }
 
             val adWidth = (adWidthPixels / density).toInt()
-            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(requireContext(), adWidth)
+            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                requireContext(),
+                adWidth
+            )
         }
+
     private fun loadBanner() {
-        val pref =requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-        val adId  =if (!BuildConfig.DEBUG){
-            pref.getString(BANNER_INSIDE,"ca-app-pub-3747520410546258/1697692330")
-        }
-        else{
+        val pref = requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+        val adId = if (!BuildConfig.DEBUG) {
+            pref.getString(BANNER_INSIDE, "ca-app-pub-3747520410546258/1697692330")
+        } else {
             resources.getString(R.string.ADMOB_BANNER_SPLASH)
         }
         Log.d("jdjasjjsa", "loading: ")
@@ -291,13 +308,23 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
         DrawableCompat.setTint(drawableTranslation!!, colorTranslation)
         binding.fragmentTranslationBtn.setBackgroundColor(resources.getColor(R.color.maroon_500))
         binding.fragmentTranslationBtn.setTextColor(colorTranslation)
-        binding.fragmentTranslationBtn.setCompoundDrawablesWithIntrinsicBounds(null, drawableTranslation, null, null)
+        binding.fragmentTranslationBtn.setCompoundDrawablesWithIntrinsicBounds(
+            null,
+            drawableTranslation,
+            null,
+            null
+        )
 
         val drawableConversation: Drawable? = binding.fragmentConversationBtn.compoundDrawables[1]
         DrawableCompat.setTint(drawableConversation!!, colorConversation)
         binding.fragmentConversationBtn.setBackgroundColor(resources.getColor(R.color.tabBg))
         binding.fragmentConversationBtn.setTextColor(colorConversation)
-        binding.fragmentConversationBtn.setCompoundDrawablesWithIntrinsicBounds(null, drawableConversation, null, null)
+        binding.fragmentConversationBtn.setCompoundDrawablesWithIntrinsicBounds(
+            null,
+            drawableConversation,
+            null,
+            null
+        )
     }
 
     private fun changeStateConversation() {
@@ -336,14 +363,21 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
 
     override fun onRootViewClick(position: Int) {
         if (NetworkCheck.isNetworkAvailable(requireContext())
-            && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(Preferences.INTERSTITIAL_HISTORY_TO_CONVERSATION,"ON").equals("ON",true)) {
-            if (isPurchased!!) {
+            && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+                .getString(Preferences.INTERSTITIAL_HISTORY_TO_CONVERSATION, "ON")
+                .equals("ON", true)
+        ) {
+            if (isPurchase) {
                 onRootViewClicked(pos = position)
             } else {
                 Handler(Looper.getMainLooper()).postDelayed({
                     onRootViewClicked(pos = position)
                 }, 1200)
-                InterstitialClassAdMob.showIfAvailableOrLoadAdMobInterstitial(requireActivity(),"history_fragment", onAdClosedCallBackAdmob = {}, onAdShowedCallBackAdmob = {})
+                InterstitialClassAdMob.showIfAvailableOrLoadAdMobInterstitial(
+                    requireActivity(),
+                    "history_fragment",
+                    onAdClosedCallBackAdmob = {},
+                    onAdShowedCallBackAdmob = {})
             }
         } else {
             onRootViewClicked(pos = position)
@@ -403,26 +437,36 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
     @SuppressLint("ClickableViewAccessibility")
     override fun onResume() {
         super.onResume()
+        isPurchase = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+            ?.getBoolean(IS_PURCHASED, false) == true
         if (!isAdded || isDetached) return
-        requireActivity().hideSystemUIUpdated()
         isNavControllerAdded()
         val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
         if (ivClose != null) {
             ivClose.visibility = View.INVISIBLE
         }
-        requireActivity().findViewById<SwitchCompat>(R.id.switchButtonConversation).let { it?.visibility = View.INVISIBLE }
-        requireActivity().findViewById<SwitchCompat>(R.id.switchButtonTTS).let { it?.visibility = View.INVISIBLE }
+        requireActivity().findViewById<SwitchCompat>(R.id.switchButtonConversation)
+            .let { it?.visibility = View.INVISIBLE }
+        requireActivity().findViewById<SwitchCompat>(R.id.switchButtonTTS)
+            .let { it?.visibility = View.INVISIBLE }
 
-        val txtSindhiKeyboard = requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
+        val txtSindhiKeyboard =
+            requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
         if (txtSindhiKeyboard != null) {
-            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(requireContext(), R.drawable.back),null,null,null)
+            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.back
+                ), null, null, null
+            )
             txtSindhiKeyboard.text = resources.getString(R.string.label_history)
 
             val startDrawable = txtSindhiKeyboard.compoundDrawables[0]
             txtSindhiKeyboard.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
                     if (event.x <= (startDrawable?.bounds?.width() ?: 0)) {
-                        val action = history_fragmentDirections.actionHistoryFragmentToTranslationFragment()
+                        val action =
+                            history_fragmentDirections.actionHistoryFragmentToTranslationFragment()
                         navController.navigate(action)
                         return@setOnTouchListener true
                     }
@@ -431,17 +475,17 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
             }
         }
 
-        if (isPurchased!!) {
+        if (isPurchase) {
             binding.nativeAdContainerAd.visibility = View.GONE
-        }
-        else {
-            if (isNetworkAvailable(requireContext())
-                && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(Preferences.ADS_NATIVE_HISTORY,"ON").equals("ON",true)) {
-                val pref =requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-                val adId  =if (!BuildConfig.DEBUG){
-                    pref.getString(INTER_OVER_ALL,"ca-app-pub-3747520410546258/1702944653")
-                }
-                else{
+        } else {
+            if (isNetworkAvailable(requireContext()) && !isPurchase &&
+                requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+                    .getString(Preferences.ADS_NATIVE_HISTORY, "ON").equals("ON", true)
+            ) {
+                val pref = requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+                val adId = if (!BuildConfig.DEBUG) {
+                    pref.getString(INTER_OVER_ALL, "ca-app-pub-3747520410546258/1702944653")
+                } else {
                     resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
                 }
                 NewNativeAdClass.checkAdRequestAdmob(
@@ -465,26 +509,4 @@ class history_fragment : Fragment(), HistoryConversationAdapter.HistoryConversat
         }
     }
 
-//    private fun onRootViewClicked(pos: Int) {
-//        fromConversation = true
-//        conversationExtensionForwardList.clear()
-//        val keyAtIndex: String? = conversationMapParent.keys.elementAtOrNull(pos)
-//
-//        for ((key, value) in conversationMapParent) {
-//            if (key == keyAtIndex) {
-//                for (conversation in value) {
-//                    conversation.conversationName = key
-//                    conversationExtensionForwardList.add(conversation)
-//                }
-//                break
-//            }
-//        }
-//
-//        val action = history_fragmentDirections.actionHistoryFragmentToConversationFragment(
-//            conversationExtensionForwardList.last().fromLang,
-//            0,
-//            conversationExtensionForwardList.last().toLang,
-//            0)
-//        findNavController().navigate(action)
-//    }
 }

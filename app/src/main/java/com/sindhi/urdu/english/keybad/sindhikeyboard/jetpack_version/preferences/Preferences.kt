@@ -21,6 +21,7 @@ object Preferences {
     const val keyTextSize = "key_textSize"
     const val soundRawFile = "soundRawFile"
     const val keyPressVolume = "keyPressVolume"
+    const val IS_PURCHASED = "IS_PURCHASED"
 
     // REMOTE CONFIG NATIVE
     const val ADS_NATIVE_WALK_THROUGH = "ADS_NATIVE_WALK_THROUGH"
@@ -46,6 +47,7 @@ object Preferences {
     const val COLLAPSIBLE_SELECT_KEYBOARD = "COLLAPSIBLE_SELECT_KEYBOARD"
     const val COLLAPSIBLE_SETTINGS = "COLLAPSIBLE_SETTINGS"
     const val COLLAPSIBLE_CONVERSATION = "COLLAPSIBLE_CONVERSATION"
+    const val INTERSTITIAL_SUBSCRIPTION_EXIT = "INTERSTITIAL_SUBSCRIPTION_EXIT"
 
     // REMOTE CONFIG INTERSTITIAL
     const val INTERSTITIAL_THEME_ENTER = "INTERSTITIAL_THEME_ENTER"

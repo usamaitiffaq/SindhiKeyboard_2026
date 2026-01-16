@@ -13,6 +13,16 @@
         <action
             android:id="@+id/action_nav_home_to_themesFragment"
             app:destination="@id/themesFragment" />
+
+        <action
+            android:id="@+id/action_nav_home_to_navSubscriptionFragment"
+            app:destination="@id/navSubscriptionFragment"
+            app:enterAnim="@anim/slide_in_bottom"
+            app:exitAnim="@anim/slide_out_top"
+            app:popEnterAnim="@anim/slide_in_top"
+            app:popExitAnim="@anim/slide_out_bottom"/>
+
+
         <action
             android:id="@+id/action_nav_home_to_settingsFragment"
             app:destination="@id/settingsFragment" />
@@ -57,6 +67,24 @@
             android:id="@+id/action_navSindhiStatus_to_navSindhiStatusShow"
             app:destination="@id/navSindhiStatusShow" />
 
+    </fragment>
+
+    <fragment
+        android:id="@+id/navSubscriptionFragment"
+        android:name="com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SubscriptionFragment"
+        android:label="Subscription"
+        tools:layout="@layout/fragment_subscription">
+
+    <argument
+        android:name="from_name"
+        app:argType="string" />
+
+    <action
+        android:id="@+id/action_navSubscriptionFragment_to_nav_home"
+        app:destination="@id/nav_home"
+        app:launchSingleTop="true"
+        app:popUpTo="@+id/nav_home"
+        app:popUpToInclusive="false"/>
     </fragment>
 
     <fragment
@@ -141,11 +169,10 @@
 
         <action
             android:id="@+id/action_navTextTranslator_to_navTranslator"
-            app:destination="@id/navTranslator"
+            app:destination="@id/translationFragment"
             app:launchSingleTop="true"
-            app:popUpTo="@+id/navTranslator"
+            app:popUpTo="@+id/translationFragment"
             app:popUpToInclusive="false" />
-
 
     </fragment>
 

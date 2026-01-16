@@ -2,11 +2,12 @@ package com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.DisplayMetrics
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -17,16 +18,13 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
-import com.google.firebase.analytics.FirebaseAnalytics.Event.PURCHASE
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentKeyboardTestBinding
@@ -37,86 +35,115 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.CustomFirebaseEvents
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.ADS_BANNER_THEMES_TEST
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_THEMES
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 
 class KeyboardTestFragment : Fragment() {
-    private lateinit var binding: FragmentKeyboardTestBinding
-    var isPurchased: Boolean? = null
-    var navController: NavController? = null
+    private var _binding: FragmentKeyboardTestBinding? = null
+    private val binding get() = _binding!!
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = FragmentKeyboardTestBinding.inflate(layoutInflater)
+    private var navController: NavController? = null
+    private var isPremiumUser = false
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentKeyboardTestBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        (activity as? AppCompatActivity)?.supportActionBar?.setDisplayHomeAsUpEnabled(false)
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        isNavControllerAdded()
-        checkForLoadBanner()
+
+        // 1. Initialize Purchase Status
+        updatePurchaseStatus()
+
+        // 2. Setup Keyboard Input
+        setupKeyboardInput()
+
+        // 3. Setup Back Press Logic
+        setupBackPressHandler()
+
+        // 4. Initial Ad Check
+        if (!isPremiumUser) {
+            setupBannerAd()
+        }
+    }
+
+    private fun updatePurchaseStatus() {
+        val prefs = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+        isPremiumUser = prefs.getBoolean(IS_PURCHASED, false)
+    }
+
+    private fun setupKeyboardInput() {
         binding.etTestKeyboard.apply {
             isFocusableInTouchMode = true
             requestFocus()
             val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
         }
+    }
 
+    private fun setupBackPressHandler() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    // Check if our custom logic ran
-                    val didCustomAction = performCustomNavigation()
-
-                    if (!didCustomAction) {
-                        // Custom logic did not run.
-                        // Disable this callback and let the system handle the back press.
+                    if (!performCustomNavigation()) {
                         isEnabled = false
                         requireActivity().onBackPressedDispatcher.onBackPressed()
                     }
-                    // If didCustomAction was true, we do nothing else.
                 }
             }
         )
     }
 
-    fun isNavControllerAdded() {
-        if (isAdded) {
-            navController = findNavController()
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onResume() {
+        super.onResume()
+        updatePurchaseStatus()
+
+        // Setup Toolbar UI
+        setupToolbar()
+
+        CustomFirebaseEvents.activitiesFragmentEvent(requireActivity(), "KeyboardTestFragment")
+
+        // Manage Ads Visibility
+        if (isPremiumUser) {
+            binding.nativeAdContainerAd1.visibility = View.GONE
+            binding.adViewContainer.visibility = View.GONE
+            binding.shimmerLayout.visibility = View.GONE
+            binding.shimmerLayout1.visibility = View.GONE
+        } else {
+            setupNativeAd()
+            setupBannerAd()
         }
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onResume() {
-        super.onResume()
-        requireActivity().hideSystemUIUpdated()
-        isNavControllerAdded()
-
+    private fun setupToolbar() {
         val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
-        if (ivClose != null) {
-            ivClose.visibility = View.INVISIBLE
-        }
+        ivClose?.visibility = View.INVISIBLE
 
         val txtSindhiKeyboard = requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
-        if (txtSindhiKeyboard != null) {
-            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(requireContext(), R.drawable.back),null,null,null)
-            txtSindhiKeyboard.text = resources.getString(R.string.label_test_theme)
+        txtSindhiKeyboard?.apply {
+            setCompoundDrawablesWithIntrinsicBounds(
+                ContextCompat.getDrawable(requireContext(), R.drawable.back), null, null, null
+            )
+            text = resources.getString(R.string.label_test_theme)
 
-            val startDrawable = txtSindhiKeyboard.compoundDrawables[0]
-
-            // CORRECTED Toolbar Back Button Touch Listener
-            txtSindhiKeyboard.setOnTouchListener { _, event ->
+            val startDrawable = compoundDrawables[0]
+            setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
                     if (event.x <= (startDrawable?.bounds?.width() ?: 0)) {
-                        // Check if our custom logic runs
-                        val didCustomAction = performCustomNavigation()
-
-                        if (!didCustomAction) {
-                            // If no custom action, just perform a normal back press
+                        if (!performCustomNavigation()) {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }
                         return@setOnTouchListener true
@@ -125,390 +152,137 @@ class KeyboardTestFragment : Fragment() {
                 false
             }
         }
+    }
 
-        CustomFirebaseEvents.activitiesFragmentEvent(requireActivity(), "KeyboardTestFragment")
+    private fun setupNativeAd() {
+        val prefs = requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+        val isNativeEnabled = prefs.getString(Preferences.ADS_NATIVE_THEMES_APPLIED_TEST, "ON").equals("ON", true)
 
-        val pref = requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
-        val adId  =if (!BuildConfig.DEBUG){
-            pref.getString(NATIVE_THEMES,"ca-app-pub-3747520410546258/6696428641")
-        }
-        else{
-            resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
-        }
-
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
-        if (isPurchased == true) {
-            binding.nativeAdContainerAd1.visibility = View.GONE
-        } else {
-            if (isNetworkAvailable(requireContext())
-                && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(
-                    Preferences.ADS_NATIVE_THEMES_APPLIED_TEST,"ON").equals("ON",true)) {
-                NewNativeAdClass.checkAdRequestAdmob(
-                    mContext = requireActivity(),
-                    adId = adId!!,
-                    fragmentName = "keybordtest",
-                    isMedia = true,
-                    isMediaOnLeft = true,
-                    adContainer = binding.nativeAdContainerAd1,
-                    isMediumAd = true,
-                    onFailed = {
-                        binding.nativeAdContainerAd1.visibility = View.GONE
-                    },
-                    onAddLoaded = {
-                        binding.shimmerLayout.stopShimmer()
-                        binding.shimmerLayout.visibility = View.GONE
-                    })
+        if (isNetworkAvailable(requireContext()) && isNativeEnabled) {
+            val adId = if (!BuildConfig.DEBUG) {
+                prefs.getString(NATIVE_THEMES, "ca-app-pub-3747520410546258/6696428641")
             } else {
-                binding.nativeAdContainerAd1.visibility = View.GONE
+                resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
             }
+
+            NewNativeAdClass.checkAdRequestAdmob(
+                mContext = requireActivity(),
+                adId = adId ?: "",
+                fragmentName = "keybordtest",
+                isMedia = true,
+                isMediaOnLeft = true,
+                adContainer = binding.nativeAdContainerAd1,
+                isMediumAd = true,
+                onFailed = {
+                    binding.nativeAdContainerAd1.visibility = View.GONE
+                },
+                onAddLoaded = {
+                    binding.shimmerLayout.stopShimmer()
+                    binding.shimmerLayout.visibility = View.GONE
+                }
+            )
+        } else {
+            binding.nativeAdContainerAd1.visibility = View.GONE
         }
     }
 
-    private fun checkForLoadBanner() {
-        if (isNetworkAvailable(requireContext()) && requireActivity().getSharedPreferences(
-                "RemoteConfig",
-                Context.MODE_PRIVATE
-            ).getString(
-                ADS_BANNER_THEMES_TEST, "ON"
-            ).equals("ON", true)
-        ) {
-            if (NativeMaster.collapsibleBannerAdMobHashMap!!.containsKey("kettest")) {
-                val collapsibleAdView: AdView? =
-                    NativeMaster.collapsibleBannerAdMobHashMap!!["kettest"]
-                Handler().postDelayed({
-                    binding.shimmerLayout1.stopShimmer()
-                    binding.shimmerLayout1.visibility = View.GONE
-//                    binding.separator.visibility = View.VISIBLE
-                    binding.adViewContainer.removeView(binding.shimmerLayout1)
+    private fun setupBannerAd() {
+        val prefs = requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+        val isBannerEnabled = prefs.getString(ADS_BANNER_THEMES_TEST, "ON").equals("ON", true)
 
-                    val parent = collapsibleAdView?.parent as? ViewGroup
-                    parent?.removeView(collapsibleAdView)
+        if (isNetworkAvailable(requireContext()) && isBannerEnabled) {
 
-                    binding.adViewContainer.addView(collapsibleAdView)
+            // Logic for Collapsible Banner from HashMap
+            if (NativeMaster.collapsibleBannerAdMobHashMap?.containsKey("kettest") == true) {
+                val collapsibleAdView = NativeMaster.collapsibleBannerAdMobHashMap!!["kettest"]
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (_binding != null) { // Check binding before accessing views
+                        binding.shimmerLayout1.stopShimmer()
+                        binding.shimmerLayout1.visibility = View.GONE
+                        binding.adViewContainer.removeView(binding.shimmerLayout1)
+
+                        (collapsibleAdView?.parent as? ViewGroup)?.removeView(collapsibleAdView)
+                        binding.adViewContainer.addView(collapsibleAdView)
+                    }
                 }, 500)
             } else {
-                loadBanner()
+                loadNewBannerAd()
             }
         } else {
             binding.adViewContainer.visibility = View.GONE
             binding.shimmerLayout1.stopShimmer()
             binding.shimmerLayout1.visibility = View.GONE
-//            binding.separator.visibility = View.GONE
         }
     }
 
-    private val adSize: AdSize
-        get() {
-            val display = requireActivity().windowManager.defaultDisplay
-            val outMetrics = DisplayMetrics()
-            display.getMetrics(outMetrics)
-
-            val density = outMetrics.density
-
-            var adWidthPixels = binding.adViewContainer.width.toFloat()
-            if (adWidthPixels == 0f) {
-                adWidthPixels = outMetrics.widthPixels.toFloat()
-            }
-
-            val adWidth = (adWidthPixels / density).toInt()
-            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(requireContext(), adWidth)
-        }
-
-
-    /**
-     * This is the single, safe helper function to handle your custom back logic.
-     * Returns true if a custom action was performed, false otherwise.
-     */
-    private fun performCustomNavigation(): Boolean {
-        isNavControllerAdded() // Ensure navController is set
-        navController?.let { nc ->
-            val currentDestination = nc.currentDestination?.id
-            if (currentDestination == R.id.themes_test_fragment) {
-                // We have a custom action, perform it
-                val action = KeyboardTestFragmentDirections.actionThemesTestFragmentToNavHome()
-                nc.navigate(action)
-                return true // We handled the back press
-            }
-        }
-        return false // We did NOT handle the back press
-    }
-
-
-    private fun loadBanner() {
-        val pref = requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
-        val adId  =if (!BuildConfig.DEBUG){
-            pref.getString(BANNER_INSIDE,"ca-app-pub-3747520410546258/1697692330")
-        }
-        else{
+    private fun loadNewBannerAd() {
+        val prefs = requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+        val adId = if (!BuildConfig.DEBUG) {
+            prefs.getString(BANNER_INSIDE, "ca-app-pub-3747520410546258/1697692330")
+        } else {
             resources.getString(R.string.ADMOB_BANNER_SPLASH)
         }
 
         val adView = AdView(requireActivity())
-        adView.setAdSize(adSize)
-        adView.adUnitId =adId!!
-        val adRequest = AdRequest.Builder().build()
+        adView.setAdSize(calculateAdSize())
+        adView.adUnitId = adId ?: ""
 
-        adView.loadAd(adRequest)
         adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
-//                binding.separator.visibility = View.VISIBLE
-                binding.adViewContainer.removeAllViews()
-                binding.adViewContainer.addView(adView)
-                NativeMaster.collapsibleBannerAdMobHashMap!!["kettest"] = adView
-                Log.d("jdjasjjsa", "onAdLoaded: ")
-
+                if (_binding != null) {
+                    binding.adViewContainer.removeAllViews()
+                    binding.adViewContainer.addView(adView)
+                    NativeMaster.collapsibleBannerAdMobHashMap?.put("kettest", adView)
+                    Log.d("KeyboardTest", "Banner onAdLoaded")
+                }
             }
 
-            override fun onAdOpened() {
-                Log.d("jdjasjjsa", "onAdOpened: ")
+            override fun onAdOpened() { Log.d("KeyboardTest", "Banner onAdOpened") }
+            override fun onAdClicked() {}
+            override fun onAdClosed() {}
+        }
 
+        adView.loadAd(AdRequest.Builder().build())
+    }
+
+    private fun calculateAdSize(): AdSize {
+        val display = requireActivity().windowManager.defaultDisplay
+        val outMetrics = DisplayMetrics()
+        display.getMetrics(outMetrics)
+
+        val density = outMetrics.density
+        var adWidthPixels = binding.adViewContainer.width.toFloat()
+        if (adWidthPixels == 0f) {
+            adWidthPixels = outMetrics.widthPixels.toFloat()
+        }
+
+        val adWidth = (adWidthPixels / density).toInt()
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(requireContext(), adWidth)
+    }
+
+    private fun performCustomNavigation(): Boolean {
+        // Safely attempt to find controller
+        try {
+            if (isAdded) {
+                navController = findNavController()
             }
+        } catch (e: Exception) {
+            return false
+        }
 
-            override fun onAdClicked() {
-
-            }
-
-            override fun onAdClosed() {
-
+        navController?.let { nc ->
+            if (nc.currentDestination?.id == R.id.themes_test_fragment) {
+                val action = KeyboardTestFragmentDirections.actionThemesTestFragmentToNavHome()
+                nc.navigate(action)
+                return true
             }
         }
+        return false
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null // Clean up binding to prevent memory leaks
     }
 }
-
-//class KeyboardTestFragment : Fragment() {
-//
-//    private lateinit var binding: FragmentKeyboardTestBinding
-//    var isPurchased: Boolean? = null
-//    var navController: NavController? = null
-//
-//    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-//        binding = FragmentKeyboardTestBinding.inflate(layoutInflater)
-//        return binding.root
-//    }
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
-//    }
-//
-//    @SuppressLint("ClickableViewAccessibility")
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//        isNavControllerAdded()
-//        checkForLoadBanner()
-//        binding.etTestKeyboard.apply {
-//            isFocusableInTouchMode = true
-//            requestFocus()
-//            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//            imm.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
-//        }
-//
-//        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
-//            object : OnBackPressedCallback(true) {
-//                override fun handleOnBackPressed() {
-//                    // Directly handle here instead of calling myBackPressed() recursively
-//                    handleCustomBackPressed(this)
-//                }
-//            }
-//        )
-//    }
-//
-//    fun isNavControllerAdded() {
-//        if (isAdded) {
-//            navController = findNavController()
-//        }
-//    }
-//
-//    @SuppressLint("ClickableViewAccessibility")
-//    override fun onResume() {
-//        super.onResume()
-//        requireActivity().hideSystemUIUpdated()
-//        isNavControllerAdded()
-//
-//        val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
-//        if (ivClose != null) {
-//            ivClose.visibility = View.INVISIBLE
-//        }
-//
-//        val txtSindhiKeyboard = requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
-//        if (txtSindhiKeyboard != null) {
-//            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(requireContext(), R.drawable.back),null,null,null)
-//            txtSindhiKeyboard.text = resources.getString(R.string.label_test_theme)
-//
-//            val startDrawable = txtSindhiKeyboard.compoundDrawables[0]
-//            // Inside your onResume() function
-//
-//            txtSindhiKeyboard.setOnTouchListener { _, event ->
-//                if (event.action == MotionEvent.ACTION_DOWN) {
-//                    if (event.x <= (startDrawable?.bounds?.width() ?: 0)) {
-//
-//                        // --- THIS IS THE FIX ---
-//                        // Check if our custom logic runs
-//                        val didCustomAction = performCustomNavigation()
-//
-//                        if (!didCustomAction) {
-//                            // If no custom action, just perform a normal back press
-//                            requireActivity().onBackPressedDispatcher.onBackPressed()
-//                        }
-//                        return@setOnTouchListener true
-//                        // --- END OF FIX ---
-//
-//                    }
-//                }
-//                false
-//            }
-//        }
-//
-//        CustomFirebaseEvents.activitiesFragmentEvent(requireActivity(), "KeyboardTestFragment")
-//
-//        val pref =requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-//        val adId  =if (!BuildConfig.DEBUG){
-//            pref.getString(NATIVE_THEMES,"ca-app-pub-3747520410546258/6696428641")
-//        }
-//        else{
-//            resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
-//        }
-//
-//        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
-//        if (isPurchased!!) {
-//            binding.nativeAdContainerAd1.visibility = View.GONE
-//        } else {
-//            if (isNetworkAvailable(requireContext())
-//                && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(
-//                    Preferences.ADS_NATIVE_THEMES_APPLIED_TEST,"ON").equals("ON",true)) {
-//                NewNativeAdClass.checkAdRequestAdmob(
-//                    mContext = requireActivity(),
-//                    adId = adId!!,
-//                    fragmentName = "keybordtest",
-//                    isMedia = true,
-//                    isMediaOnLeft = true,
-//                    adContainer = binding.nativeAdContainerAd1,
-//                    isMediumAd = true,
-//                    onFailed = {
-//                        binding.nativeAdContainerAd1.visibility = View.GONE
-//                    },
-//                    onAddLoaded = {
-//                        binding.shimmerLayout.stopShimmer()
-//                        binding.shimmerLayout.visibility = View.GONE
-//                    })
-//            } else {
-//                binding.nativeAdContainerAd1.visibility = View.GONE
-//            }
-//        }
-//    }
-//    private fun checkForLoadBanner() {
-//        if (isNetworkAvailable(requireContext()) && requireActivity().getSharedPreferences(
-//                "RemoteConfig",
-//                Context.MODE_PRIVATE
-//            ).getString(
-//                ADS_BANNER_THEMES_TEST, "ON"
-//            ).equals("ON", true)
-//        ) {
-//            if (NativeMaster.collapsibleBannerAdMobHashMap!!.containsKey("kettest")) {
-//                val collapsibleAdView: AdView? =
-//                    NativeMaster.collapsibleBannerAdMobHashMap!!["kettest"]
-//                Handler().postDelayed({
-//                    binding.shimmerLayout1.stopShimmer()
-//                    binding.shimmerLayout1.visibility = View.GONE
-//                    binding.separator.visibility = View.VISIBLE
-//                    binding.adViewContainer.removeView(binding.shimmerLayout1)
-//
-//                    val parent = collapsibleAdView?.parent as? ViewGroup
-//                    parent?.removeView(collapsibleAdView)
-//
-//                    binding.adViewContainer.addView(collapsibleAdView)
-//                }, 500)
-//            } else {
-//                loadBanner()
-//            }
-//        } else {
-//            binding.adViewContainer.visibility = View.GONE
-//            binding.shimmerLayout1.stopShimmer()
-//            binding.shimmerLayout1.visibility = View.GONE
-//            binding.separator.visibility = View.GONE
-//        }
-//    }
-//    /*private val adSize: AdSize
-//        get() = AdSize.BANNER*/
-//    private val adSize: AdSize
-//        get() {
-//            val display = requireActivity().windowManager.defaultDisplay
-//            val outMetrics = DisplayMetrics()
-//            display.getMetrics(outMetrics)
-//
-//            val density = outMetrics.density
-//
-//            var adWidthPixels = binding.adViewContainer.width.toFloat()
-//            if (adWidthPixels == 0f) {
-//                adWidthPixels = outMetrics.widthPixels.toFloat()
-//            }
-//
-//            val adWidth = (adWidthPixels / density).toInt()
-//            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(requireContext(), adWidth)
-//        }
-//
-//
-//
-//    private fun handleCustomBackPressed(callback: OnBackPressedCallback) {
-//        navController?.let { navController ->
-//            val currentDestination = navController.currentDestination?.id
-//            if (currentDestination == R.id.themes_test_fragment) {
-//                val action = KeyboardTestFragmentDirections.actionThemesTestFragmentToNavHome()
-//                navController.navigate(action)
-//            } else {
-//                // Disable callback before delegating to system
-//                callback.isEnabled = false
-//                requireActivity().onBackPressedDispatcher.onBackPressed()
-//            }
-//        } ?: run {
-//            isNavControllerAdded()
-//        }
-//    }
-//
-//
-//
-//    private fun loadBanner() {
-//        val pref =requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-//        val adId  =if (!BuildConfig.DEBUG){
-//            pref.getString(BANNER_INSIDE,"ca-app-pub-3747520410546258/1697692330")
-//        }
-//        else{
-//            resources.getString(R.string.ADMOB_BANNER_SPLASH)
-//        }
-//
-//        val adView = AdView(requireActivity())
-//        adView.setAdSize(adSize)
-//        adView.adUnitId =adId!!
-//        val adRequest = AdRequest.Builder().build()
-//
-//        adView.loadAd(adRequest)
-//        adView.adListener = object : AdListener() {
-//            override fun onAdLoaded() {
-//                binding.separator.visibility = View.VISIBLE
-//                binding.adViewContainer.removeAllViews()
-//                binding.adViewContainer.addView(adView)
-//                NativeMaster.collapsibleBannerAdMobHashMap!!["kettest"] = adView
-//                Log.d("jdjasjjsa", "onAdLoaded: ")
-//
-//            }
-//
-//            override fun onAdFailedToLoad(error: LoadAdError) {
-//                binding.separator.visibility = View.GONE
-//
-//            }
-//
-//            override fun onAdOpened() {
-//                Log.d("jdjasjjsa", "onAdOpened: ")
-//
-//            }
-//
-//            override fun onAdClicked() {
-//
-//            }
-//
-//            override fun onAdClosed() {
-//
-//            }
-//        }
-//    }
-//}

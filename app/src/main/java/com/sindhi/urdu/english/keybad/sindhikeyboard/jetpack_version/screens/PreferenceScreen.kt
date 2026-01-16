@@ -3,7 +3,10 @@ package com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.screens
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -31,6 +34,10 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClas
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.MyPreferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.composeFeedBackEmail
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.activities.NavigationActivity
+import androidx.core.net.toUri
+import com.manual.mediation.library.sotadlib.utils.MyLocaleHelper
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.MyPrefHelper
+import java.util.Locale
 
 @Composable
 fun PreferenceScreen(
@@ -41,6 +48,25 @@ fun PreferenceScreen(
     val scrollState = rememberScrollState()
     val myContext = LocalContext.current
     val activity = myContext as NavigationActivity
+
+    val languageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // Logic taken exactly from your SettingFragment
+        val currentLocale: Locale = context.resources.configuration.locale
+        val language = currentLocale.language
+
+        // Assuming MyPrefHelper and MyLocaleHelper are accessible here
+        // If MyPreferences is the same as MyPrefHelper, use myPreferences instead
+        MyPrefHelper(context).setSelectedLanguageCode(language)
+        MyLocaleHelper.setLocale(context, language)
+
+        requireActivity.apply {
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            recreate()
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+    }
 
     val googleMobileAdsConsentManager: GoogleMobileAdsConsentManager = GoogleMobileAdsConsentManager.getInstance(context = context)
 
@@ -115,23 +141,43 @@ fun PreferenceScreen(
 
                 Divider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-                /*Divider(color = MaterialTheme.colorScheme.surfaceVariant)
-                SettingItem(drawableResource = R.drawable.ic_app_lang_change,
-                    text = stringResource(R.string.label_app_language)) {
-                    requireActivity.startActivity(Intent(requireActivity, LanguageScreenDup::class.java).putExtra("From","AppSettings"))
-                }*/
+
+
+                SettingItem(
+                    drawableResource = R.drawable.ic_manage_subscrption,
+                    text = stringResource(R.string.label_manage_subscrptions)
+                ) {
+                    val browserIntent = Intent(
+                        Intent.ACTION_VIEW,
+                        "https://play.google.com/store/account/subscriptions".toUri()
+                    )
+                    context.startActivity(browserIntent)
+                }
+
 
                 Divider(color = MaterialTheme.colorScheme.surfaceVariant)
                 SettingsCategory(stringResource(R.string.shareFb))
 
                 Divider(color = MaterialTheme.colorScheme.surfaceVariant)
 
+//                SettingItem(
+//                    text = stringResource(id = R.string.label_app_language),
+//                    drawableResource = R.drawable.ic_language_updated){
+//                    val intent = Intent(requireActivity, LanguageScreenOne::class.java)
+//                    intent.putExtra("comeFrom", "AppSettings")
+//                    context.startActivity(intent)
+//                }
+
                 SettingItem(
                     text = stringResource(id = R.string.label_app_language),
-                    drawableResource = R.drawable.ic_language_updated){
-                    val intent = Intent(requireActivity, LanguageScreenOne::class.java)
+                    drawableResource = R.drawable.ic_language_updated
+                ) {
+                    // Create Intent
+                    val intent = Intent(context, LanguageScreenOne::class.java)
                     intent.putExtra("comeFrom", "AppSettings")
-                    context.startActivity(intent)
+
+                    // Launch using the launcher created at the top
+                    languageLauncher.launch(intent)
                 }
 
                 Divider(color = MaterialTheme.colorScheme.surfaceVariant)

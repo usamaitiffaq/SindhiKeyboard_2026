@@ -26,7 +26,6 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentSindhiStatusBinding
@@ -41,7 +40,9 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.sindhiPoetryModels.Label
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.PURCHASE
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_POETRY
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_OVER_ALL
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.safeNavigate
 
 class SindhiStatusFragment : Fragment() {
@@ -50,9 +51,13 @@ class SindhiStatusFragment : Fragment() {
     private lateinit var adapter: LabelsAdapter
     var navController: NavController? = null
     lateinit var labelNamesArrayList: ArrayList<LabelNamesIcons>
-    var isPurchased: Boolean? = null
+    private var isPurchase = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentSindhiStatusBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -61,7 +66,8 @@ class SindhiStatusFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         isNavControllerAdded()
         checkForLoadBanner()
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
+        isPurchase = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+            ?.getBoolean(IS_PURCHASED, false) == true
         labelNamesArrayList = ArrayList()
         fillUpPoetList()
 
@@ -69,8 +75,13 @@ class SindhiStatusFragment : Fragment() {
         adapter = LabelsAdapter(labelNamesArrayList) { name ->
             Log.e("SindhiStatusFragment", "labelNamesArrayList: $name")
             if (navController != null) {
-                if (isNetworkAvailable(context) && !(PreferenceManager.getDefaultSharedPreferences(requireActivity()).getBoolean(PURCHASE,false))
-                    && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(Preferences.INTERSTITIAL_SINDHI_STATUS_POETRY_CLICK,"ON").equals("ON",true)) {
+                if (isNetworkAvailable(context) && !(PreferenceManager.getDefaultSharedPreferences(
+                        requireActivity()
+                    ).getBoolean(PURCHASE, false))
+                    && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+                        .getString(Preferences.INTERSTITIAL_SINDHI_STATUS_POETRY_CLICK, "ON")
+                        .equals("ON", true)
+                ) {
                     InterstitialClassAdMob.showIfAvailableOrLoadAdMobInterstitial(
                         context = context,
                         "SindhiStatusFragment",
@@ -78,17 +89,25 @@ class SindhiStatusFragment : Fragment() {
                             Handler(Looper.getMainLooper()).postDelayed({
                                 if (navController != null) {
                                     if (isAdded) {
-                                        navController?.safeNavigate(SindhiStatusFragmentDirections.actionNavSindhiStatusToNavSindhiStatusShow(name))
+                                        navController?.safeNavigate(
+                                            SindhiStatusFragmentDirections.actionNavSindhiStatusToNavSindhiStatusShow(
+                                                name
+                                            )
+                                        )
                                     }
                                 } else {
                                     isNavControllerAdded()
                                 }
-                            },300)
+                            }, 300)
                         },
                         onAdShowedCallBackAdmob = { })
                 } else {
                     if (isAdded) {
-                        navController?.safeNavigate(SindhiStatusFragmentDirections.actionNavSindhiStatusToNavSindhiStatusShow(name))
+                        navController?.safeNavigate(
+                            SindhiStatusFragmentDirections.actionNavSindhiStatusToNavSindhiStatusShow(
+                                name
+                            )
+                        )
                     }
                 }
             } else {
@@ -140,6 +159,7 @@ class SindhiStatusFragment : Fragment() {
             binding.shimmerLayoutBanner.visibility = View.GONE
         }
     }
+
     /*private val adSize: AdSize
         get() = AdSize.BANNER*/
     private val adSize: AdSize
@@ -156,15 +176,18 @@ class SindhiStatusFragment : Fragment() {
             }
 
             val adWidth = (adWidthPixels / density).toInt()
-            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(requireContext(), adWidth)
+            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                requireContext(),
+                adWidth
+            )
         }
+
     private fun loadBanner() {
         Log.d("jdjasjjsa", "loading: ")
-        val pref =requireContext().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-        val adId  =if (!BuildConfig.DEBUG){
-            pref.getString(BANNER_INSIDE,"ca-app-pub-3747520410546258/1697692330")
-        }
-        else{
+        val pref = requireContext().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+        val adId = if (!BuildConfig.DEBUG) {
+            pref.getString(BANNER_INSIDE, "ca-app-pub-3747520410546258/1697692330")
+        } else {
             resources.getString(R.string.ADMOB_BANNER_SPLASH)
         }
         val adView = AdView(requireActivity())
@@ -205,7 +228,6 @@ class SindhiStatusFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         isNavControllerAdded()
 
         val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
@@ -213,9 +235,15 @@ class SindhiStatusFragment : Fragment() {
             ivClose.visibility = View.INVISIBLE
         }
 
-        val txtSindhiKeyboard = requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
+        val txtSindhiKeyboard =
+            requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
         if (txtSindhiKeyboard != null) {
-            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(requireContext(), R.drawable.back),null,null,null)
+            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.back
+                ), null, null, null
+            )
             txtSindhiKeyboard.text = resources.getString(R.string.label_sindhi_status)
 
             val startDrawable = txtSindhiKeyboard.compoundDrawables[0]
@@ -230,35 +258,37 @@ class SindhiStatusFragment : Fragment() {
             }
         }
 
-        if (isPurchased!!) {
+        if (isPurchase) {
             binding.nativeAdContainerAd1.visibility = View.GONE
         } else {
             if (isNetworkAvailable(requireContext())
-                && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(
-                    Preferences.ADS_NATIVE_POETRY,"ON").equals("ON",true)) {
+                && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+                    .getString(
+                        Preferences.ADS_NATIVE_POETRY, "ON"
+                    ).equals("ON", true)
+            ) {
 
-                val pref =requireContext().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-                val adId  =if (!BuildConfig.DEBUG){
-                    pref.getString(NATIVE_OVER_ALL,"ca-app-pub-3747520410546258/1702944653")
-                }
-                else{
+                val pref = requireContext().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+                val adId = if (!BuildConfig.DEBUG) {
+                    pref.getString(NATIVE_OVER_ALL, "ca-app-pub-3747520410546258/1702944653")
+                } else {
                     resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
                 }
-                    NewNativeAdClass.checkAdRequestAdmob(
-                        mContext = requireActivity(),
-                        adId = adId!!,//,getString(R.string.NATIVE_INSIDE_BIDDING),
-                        fragmentName = "OverallAtPoetryExit",
-                        isMedia = true,
-                        isMediaOnLeft = true,
-                        adContainer = binding.nativeAdContainerAd1,
-                        isMediumAd = true,
-                        onFailed = {
-                            binding.nativeAdContainerAd1.visibility = View.GONE
-                        },
-                        onAddLoaded = {
-                            binding.shimmerLayout.stopShimmer()
-                            binding.shimmerLayout.visibility = View.GONE
-                        })
+                NewNativeAdClass.checkAdRequestAdmob(
+                    mContext = requireActivity(),
+                    adId = adId!!,//,getString(R.string.NATIVE_INSIDE_BIDDING),
+                    fragmentName = "OverallAtPoetryExit",
+                    isMedia = true,
+                    isMediaOnLeft = true,
+                    adContainer = binding.nativeAdContainerAd1,
+                    isMediumAd = true,
+                    onFailed = {
+                        binding.nativeAdContainerAd1.visibility = View.GONE
+                    },
+                    onAddLoaded = {
+                        binding.shimmerLayout.stopShimmer()
+                        binding.shimmerLayout.visibility = View.GONE
+                    })
             } else {
                 binding.nativeAdContainerAd1.visibility = View.GONE
             }
@@ -272,11 +302,53 @@ class SindhiStatusFragment : Fragment() {
     }
 
     private fun fillUpPoetList() {
-        labelNamesArrayList.add(LabelNamesIcons(ContextCompat.getDrawable(requireContext(), R.drawable.ic_1),"استادبخاري"))
-        labelNamesArrayList.add(LabelNamesIcons(ContextCompat.getDrawable(requireContext(), R.drawable.ic_2),"رومينٽڪ شاعري"))
-        labelNamesArrayList.add(LabelNamesIcons(ContextCompat.getDrawable(requireContext(), R.drawable.ic_3),"شاھ لطيف جي شاعري ۽ سمجھاني"))
-        labelNamesArrayList.add(LabelNamesIcons(ContextCompat.getDrawable(requireContext(), R.drawable.ic_4),"شيخ اياز"))
-        labelNamesArrayList.add(LabelNamesIcons(ContextCompat.getDrawable(requireContext(), R.drawable.ic_5),"کل ۽پوگ"))
-        labelNamesArrayList.add(LabelNamesIcons(ContextCompat.getDrawable(requireContext(), R.drawable.ic_6),"لطيفيات"))
+        labelNamesArrayList.add(
+            LabelNamesIcons(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_1
+                ), "استادبخاري"
+            )
+        )
+        labelNamesArrayList.add(
+            LabelNamesIcons(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_2
+                ), "رومينٽڪ شاعري"
+            )
+        )
+        labelNamesArrayList.add(
+            LabelNamesIcons(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_3
+                ), "شاھ لطيف جي شاعري ۽ سمجھاني"
+            )
+        )
+        labelNamesArrayList.add(
+            LabelNamesIcons(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_4
+                ), "شيخ اياز"
+            )
+        )
+        labelNamesArrayList.add(
+            LabelNamesIcons(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_5
+                ), "کل ۽پوگ"
+            )
+        )
+        labelNamesArrayList.add(
+            LabelNamesIcons(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_6
+                ), "لطيفيات"
+            )
+        )
     }
 }

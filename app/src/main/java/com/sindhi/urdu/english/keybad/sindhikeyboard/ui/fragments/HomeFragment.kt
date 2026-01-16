@@ -26,6 +26,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import com.airbnb.lottie.LottieAnimationView
 import com.anjlab.android.iab.v3.BillingProcessor
 import com.anjlab.android.iab.v3.BillingProcessor.IBillingHandler
 import com.anjlab.android.iab.v3.PurchaseInfo
@@ -35,7 +36,6 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentHomeBinding
@@ -44,17 +44,21 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.InterstitialClassAdMob
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NativeMaster
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NetworkCheck
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NewNativeAdClass
+import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.keyboardLayout.isHuaweiDevice
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.ADS_NATIVE_HOME
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.COLLAPSIBLE_HOME
+import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.CustomFirebaseEvents
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.activities.FOFStartActivity
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.activities.StickersViewActivity
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.PURCHASE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.INTERSTITIAL_STICKER_ENTER
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_HOME
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.OVERALL_BANNER_RELOADING
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.ViewDialog
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.blockingClickListener
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.safeNavigate
@@ -64,10 +68,13 @@ class HomeFragment : Fragment(), IBillingHandler {
     var navController: NavController? = null
     var isPurchased: Boolean? = null
     var bp: BillingProcessor? = null
-    lateinit var mSharedPreferences: SharedPreferences
     var bundle = Bundle()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding!!.root
     }
@@ -75,8 +82,15 @@ class HomeFragment : Fragment(), IBillingHandler {
     override fun onResume() {
         super.onResume()
         isNavControllerAdded()
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .getBoolean(PURCHASE, false)
+
+        isPurchased = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+            ?.getBoolean(IS_PURCHASED, false) == true
+        val ivPurchase = requireActivity().findViewById<LottieAnimationView>(R.id.ivPurchase)
+
+        if (isPurchased == true) {
+            ivPurchase.visibility = View.GONE
+        }
+
         if (NetworkCheck.isNetworkAvailable(requireActivity())
             && !isPurchased!!
             && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
@@ -104,11 +118,42 @@ class HomeFragment : Fragment(), IBillingHandler {
         }
 
 
+        val toolbarContainer = requireActivity().findViewById<View>(R.id.inclToolBar)
+        toolbarContainer?.visibility = View.VISIBLE
+
+
+        if (!requireActivity().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+                .getBoolean(IS_PURCHASED, false)
+            && !isHuaweiDevice()
+        ) {
+
+            if (ivPurchase != null) {
+                ivPurchase.visibility = View.VISIBLE
+                ivPurchase.blockingClickListener {
+                    if (isAdded && navController != null) {
+                        CustomFirebaseEvents.activitiesFragmentEvent(
+                            requireActivity(),
+                            "home_scr_tap_removeads"
+                        )
+                        val action =
+                            HomeFragmentDirections.actionNavHomeToNavSubscriptionFragment("Home")
+                        navController?.safeNavigate(action)
+                    } else {
+                        isNavControllerAdded()
+                    }
+                }
+            }
+        }
+
+
         requireActivity().findViewById<ConstraintLayout>(R.id.clEditing)
             .let { it?.visibility = View.INVISIBLE }
 
         if (NetworkCheck.isNetworkAvailable(requireActivity())
-            && !isPurchased!! && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+            && !isPurchased!! && requireActivity().getSharedPreferences(
+                "RemoteConfig",
+                Context.MODE_PRIVATE
+            )
                 .getString(ADS_NATIVE_HOME, "ON").equals("ON", true)
         ) {
 
@@ -248,10 +293,10 @@ class HomeFragment : Fragment(), IBillingHandler {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
+        isPurchased = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+            ?.getBoolean(IS_PURCHASED, false) == true
         binding?.clEditor?.setOnClickListener {
-            val action= HomeFragmentDirections.actionNavHomeToNavEditors()
+            val action = HomeFragmentDirections.actionNavHomeToNavEditors()
             navController?.navigate(action)
         }
 
@@ -262,25 +307,17 @@ class HomeFragment : Fragment(), IBillingHandler {
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    if (isPurchased!!) {
-                        val viewDialog = ViewDialog()
-                        viewDialog.showDialog(requireActivity(), "Do you Want to Exit App?")
+                    if (isAdded && navController != null) {
+                        val action = HomeFragmentDirections.actionNavHomeToExitScreenFragment()
+                        navController?.safeNavigate(action)
                     } else {
-                        if (navController != null) {
-                            val action = HomeFragmentDirections.actionNavHomeToExitScreenFragment()
-                            navController?.safeNavigate(action)
-                        } else {
-                            isNavControllerAdded()
-                        }
+                        isNavControllerAdded()
                     }
                 }
             })
 
-        bp = BillingProcessor(requireContext(), getString(R.string.licence_key), this)
-        bp!!.initialize()
 
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .getBoolean(PURCHASE, false)
+
 
         binding!!.clTextTranslation.blockingClickListener {
             if (navController != null) {
@@ -379,8 +416,7 @@ class HomeFragment : Fragment(), IBillingHandler {
         binding!!.clDailyStatus.blockingClickListener {
             if (navController != null) {
                 if (NetworkCheck.isNetworkAvailable(requireContext()) && requireActivity().getSharedPreferences(
-                        "RemoteConfig",
-                        Context.MODE_PRIVATE
+                        "RemoteConfig", Context.MODE_PRIVATE
                     ).getString(Preferences.INTERSTITIAL_SINDHI_STATUS_ENTER, "ON")
                         .equals("ON", true)
                 ) {
@@ -406,6 +442,10 @@ class HomeFragment : Fragment(), IBillingHandler {
         if (bp != null) {
             bp!!.release()
         }
+
+        requireActivity().findViewById<LottieAnimationView>(R.id.ivPurchase)
+            .let { it?.visibility = View.GONE }
+
         requireActivity().findViewById<ImageView>(R.id.ivSettings)
             .let { it?.visibility = View.GONE }
         super.onDestroy()
@@ -457,7 +497,11 @@ class HomeFragment : Fragment(), IBillingHandler {
 
     override fun onPause() {
         super.onPause()
+
         requireActivity().findViewById<ImageView>(R.id.ivSettings)
+            .let { it?.visibility = View.GONE }
+
+        requireActivity().findViewById<LottieAnimationView>(R.id.ivPurchase)
             .let { it?.visibility = View.GONE }
     }
 

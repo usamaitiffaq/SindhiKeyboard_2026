@@ -41,15 +41,16 @@ import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentTextTranslatorBinding
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.InterstitialClassAdMob
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NetworkCheck
+import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NewNativeAdClass
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.CustomFirebaseEvents
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.blockingClickListener
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SpeechToText.AllCountryListMe
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SpeechToText.TranslatorCall
-import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.CountryModel
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_CONVERSATION
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_TEXT_TRANSLATOR
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.SelectCountryDialog
-import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.hideKeyboard
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.safeNavigate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -77,8 +78,6 @@ class TextTranslatorFragment : Fragment(), TextToSpeech.OnInitListener {
     var fromCountryName = ""
     var toCountryName = ""
     var fromTo = ""
-
-
 
     fun isNavControllerAdded() {
         if (isAdded) {
@@ -142,55 +141,51 @@ class TextTranslatorFragment : Fragment(), TextToSpeech.OnInitListener {
         setFromLanguage(fromCountryName)
         setToLanguage(toCountryName)
 
-//        requireActivity().onBackPressedDispatcher.addCallback(
-//            viewLifecycleOwner,
-//            object : OnBackPressedCallback(true) {
-//                override fun handleOnBackPressed() {
-//                    if (autoSpeakTTSwitch != null) {
-//                        autoSpeakTTSwitch!!.visibility = View.INVISIBLE
-//                    }
-//                    if (navController != null) {
-//                        val action =
-//                            TextTranslatorFragmentDirections.actionNavTextTranslatorToNavTranslator()
-//                        navController.safeNavigate(action)
-//                    } else {
-//                        isNavControllerAdded()
-//                    }
-//                }
-//            })
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (autoSpeakTTSwitch != null) {
+                        autoSpeakTTSwitch!!.visibility = View.INVISIBLE
+                    }
+                    if (navController != null) {
+                        val action =
+                            TextTranslatorFragmentDirections.actionNavTextTranslatorToNavTranslator()
+                        navController.safeNavigate(action)
+                    } else {
+                        isNavControllerAdded()
+                    }
+                }
+            })
 
-//        val pref = requireContext().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-//        val adId  =if (!BuildConfig.DEBUG){
-//            pref.getString(ADMOB_NATIVE_TRANSLATOR,"ca-app-pub-3747520410546258/3144196445")
-//        }
-//        else{
-//            resources.getString(R.string.ADMOB_BANNER_SPLASH)
-//        }
+        val pref = requireContext().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+        val adId = if (!BuildConfig.DEBUG) {
+            pref.getString(NATIVE_CONVERSATION, "ca-app-pub-3747520410546258/5450617979")
+        } else {
+            resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
+        }
 
-//        if (NetworkCheck.isNetworkAvailable(requireActivity())
-//            && !requireActivity().getSharedPreferences(
-//                RemoteConfigConst.REMOTE_CONFIG,
-//                Context.MODE_PRIVATE
-//            ).getBoolean(Preferences.IS_PURCHASED, false)
-//            && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
-//                .getString(NATIVE_TEXT_TRANSLATOR, "ON").equals("ON", true)
-//        ) {
-//            NewNativeAdClass.checkAdRequestAdmob(
-//                mContext = requireActivity(),
-//                adId = adId!!,
-//                fragmentName = "TextTranslatorFragment",
-//                isMedia = true,
-//                isMediaOnLeft = true,
-//                adContainer = binding.nativeAdContainerAd,
-//                isMediumAd = false,
-//                onFailed = { binding.nativeAdContainerAd.visibility = View.GONE },
-//                onAddLoaded = {
-//                    binding.shimmerLayout.stopShimmer()
-//                    binding.shimmerLayout.visibility = View.GONE
-//                })
-//        } else {
-//            binding.nativeAdContainerAd.visibility = View.GONE
-//        }
+        if (NetworkCheck.isNetworkAvailable(requireActivity())
+            && !requireActivity().getSharedPreferences(RemoteConfigConst.REMOTE_CONFIG, Context.MODE_PRIVATE).getBoolean(Preferences.IS_PURCHASED, false)
+            && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+                .getString(NATIVE_TEXT_TRANSLATOR, "ON").equals("ON", true)
+        ) {
+            NewNativeAdClass.checkAdRequestAdmob(
+                mContext = requireActivity(),
+                adId = adId!!,
+                fragmentName = "TextTranslatorFragment",
+                isMedia = false,
+                isMediaOnLeft = false,
+                adContainer = binding.nativeAdContainerAd,
+                isMediumAd = false,
+                onFailed = { binding.nativeAdContainerAd.visibility = View.GONE },
+                onAddLoaded = {
+                    binding.shimmerLayout.stopShimmer()
+                    binding.shimmerLayout.visibility = View.GONE
+                })
+        } else {
+            binding.nativeAdContainerAd.visibility = View.GONE
+        }
 
         binding.btnfrom.blockingClickListener {
             fromTo = "from"
@@ -363,10 +358,7 @@ class TextTranslatorFragment : Fragment(), TextToSpeech.OnInitListener {
         super.onResume()
         isNavControllerAdded()
 
-//        requireActivity().findViewById<SwitchCompat>(R.id.switchButtonTTA)
-//            .let { it?.visibility = View.INVISIBLE }
-//        requireActivity().findViewById<SwitchCompat>(R.id.switchButtonVT)
-//            .let { it?.visibility = View.INVISIBLE }
+
         requireActivity().findViewById<ImageView>(R.id.ivHistory)
             .let { it?.visibility = View.INVISIBLE }
 
@@ -396,6 +388,7 @@ class TextTranslatorFragment : Fragment(), TextToSpeech.OnInitListener {
             }
         }
         val clSubDiv = requireActivity().findViewById<ConstraintLayout>(R.id.clSubDiv)
+
         if (clSubDiv != null) {
             clSubDiv.background =
                 requireActivity().resources.getDrawable(R.drawable.bg_header_blue, null)

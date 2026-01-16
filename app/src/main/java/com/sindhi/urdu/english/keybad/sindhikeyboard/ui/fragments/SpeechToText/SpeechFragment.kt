@@ -1,7 +1,6 @@
 package com.sindhi.urdu.english.keybad.sindhikeyboard.ui.fragments.SpeechToText
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -44,7 +43,6 @@ import com.karumi.dexter.listener.PermissionDeniedResponse
 import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.single.PermissionListener
 import com.manual.mediation.library.sotadlib.data.Language
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.newvoicetyping.ui.Speechtotext.CountryCountry
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
@@ -55,8 +53,10 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NetworkCheck
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NewNativeAdClass
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.PURCHASE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_CONVERSATION
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_THEMES
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.blockingClickListener
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.hideKeyboard
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.SelectCountryDialog
@@ -64,10 +64,8 @@ import kotlinx.coroutines.*
 import java.util.*
 
 class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
-
     private lateinit var binding: FragmentSpeechBinding
     lateinit var navController: NavController
-    var isPurchased: Boolean? = null
     private var tts: TextToSpeech? = null
     var btnFavoriteClicked = false
     lateinit var mSharedPreferences: SharedPreferences
@@ -82,6 +80,7 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
     var fromCountryName = ""
     var toCountryName = ""
     var fromTo = ""
+    var isPurchase = false
 
     private val selectCountryDialog: SelectCountryDialog by lazy {
         SelectCountryDialog().apply {
@@ -112,8 +111,7 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
         isNavControllerAdded()
         bundle.putString("SpeechFragment", "SpeechFragment")
         ApplicationClass.firebaseAnalyticsEventsLog.logEvent("event_speech", bundle)
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .getBoolean(PURCHASE, false)
+        isPurchase = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)?.getBoolean(IS_PURCHASED, false) == true
         mSharedPreferences =
             android.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
         tts = TextToSpeech(requireActivity(), this, "com.google.android.tts")
@@ -152,7 +150,8 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
                 override fun handleOnBackPressed() {
                     // Fix: Check if we are still on the correct fragment before navigating
                     if (navController.currentDestination?.id == R.id.speechFragment) {
-                        val action = SpeechFragmentDirections.actionSpeechFragmentToTranslationFragment()
+                        val action =
+                            SpeechFragmentDirections.actionSpeechFragmentToTranslationFragment()
                         navController.navigate(action)
                     } else {
                         isNavControllerAdded()
@@ -234,7 +233,7 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
                         .getString(Preferences.INTERSTITIAL_SPEECH_TO_TEXT_3_CLICK_ENABLE, "ON")
                         .equals("ON", true)
                 ) {
-                    if (isPurchased!!) {
+                    if (isPurchase) {
                         btnTranslateClicked()
                     } else {
                         if (showAdCounterOnThreeClicks >= 2) {
@@ -346,20 +345,19 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         isNavControllerAdded()
-        if (isPurchased!!) {
+        if (isPurchase) {
             binding.nativeAdContainerAd.visibility = View.GONE
         } else {
             if (NetworkCheck.isNetworkAvailable(requireContext())
                 && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
                     .getString(Preferences.ADS_NATIVE_SPEECHTOTEXT, "ON").equals("ON", true)
+                && !isPurchase
             ) {
-                val pref =requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-                val adId  =if (!BuildConfig.DEBUG){
-                    pref.getString(NATIVE_CONVERSATION,"ca-app-pub-3747520410546258/5450617979")
-                }
-                else{
+                val pref = requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+                val adId = if (!BuildConfig.DEBUG) {
+                    pref.getString(NATIVE_CONVERSATION, "ca-app-pub-3747520410546258/5450617979")
+                } else {
                     resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
                 }
                 NewNativeAdClass.checkAdRequestAdmob(
@@ -419,21 +417,7 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
             )
             txtSindhiKeyboard.text = resources.getString(R.string.label_speechTotext)
             val startDrawable = txtSindhiKeyboard.compoundDrawables[0]
-//            txtSindhiKeyboard.setOnTouchListener { _, event ->
-//                if (event.action == MotionEvent.ACTION_DOWN) {
-//                    if (event.x <= (startDrawable?.bounds?.width() ?: 0)) {
-//                        if (navController != null) {
-//                            val action =
-//                                SpeechFragmentDirections.actionSpeechFragmentToTranslationFragment()
-//                            navController.navigate(action)
-//                        } else {
-//                            isNavControllerAdded()
-//                        }
-//                        return@setOnTouchListener true
-//                    }
-//                }
-//                false
-//            }
+
 
             txtSindhiKeyboard.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {  // Fixed: ACTION_DOWN instead of ACTION.DOWN
@@ -441,7 +425,8 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
                         // Ensure navController is properly initialized before navigating
                         val currentNavController = navController ?: findNavController()
                         try {
-                            val action = SpeechFragmentDirections.actionSpeechFragmentToTranslationFragment()
+                            val action =
+                                SpeechFragmentDirections.actionSpeechFragmentToTranslationFragment()
                             currentNavController.navigate(action)
                         } catch (e: Exception) {
                             Log.e("Navigation", "Failed to navigate: ${e.message}")
@@ -449,7 +434,10 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
                             try {
                                 findNavController().navigate(R.id.translationFragment) // Use direct ID if available
                             } catch (e2: Exception) {
-                                Log.e("Navigation", "Fallback navigation also failed: ${e2.message}")
+                                Log.e(
+                                    "Navigation",
+                                    "Fallback navigation also failed: ${e2.message}"
+                                )
                                 requireActivity().onBackPressed() // Final fallback
                             }
                         }
@@ -476,7 +464,8 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
             }
 
             tolanguacode == "null" -> {
-                Toast.makeText(ctx, "Please Select A Language for translation", Toast.LENGTH_SHORT).show()
+                Toast.makeText(ctx, "Please Select A Language for translation", Toast.LENGTH_SHORT)
+                    .show()
             }
 
             !NetworkCheck.isNetworkAvailable(ctx) -> {
@@ -611,7 +600,6 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
     val job = Job()
 
 
-
     fun translateText(fromLanguageCode: String, toLanguageCode: String, source: String) {
         if (!isAdded || context == null) return // fragment not attached
 
@@ -641,11 +629,13 @@ class SpeechFragment : Fragment(), TextToSpeech.OnInitListener {
                     binding.animationView.cancelAnimation()
                     btnFavoriteClicked = true
                 } else {
-                    Toast.makeText(requireContext(), "Translation failed!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Translation failed!", Toast.LENGTH_SHORT)
+                        .show()
                 }
             } catch (e: Exception) {
                 if (isAdded) {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }

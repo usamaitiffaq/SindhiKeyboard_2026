@@ -18,14 +18,10 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.airbnb.lottie.LottieAnimationView
 import com.applovin.sdk.AppLovinPrivacySettings
 import com.applovin.sdk.AppLovinSdk
@@ -87,6 +83,7 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.INTERSTITIAL_SINDHI_STATUS_POETRY_CLICK
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.INTERSTITIAL_SPEECH_TO_TEXT_3_CLICK_ENABLE
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.INTERSTITIAL_SPEECH_TO_TEXT_ENTER
+import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.INTERSTITIAL_SUBSCRIPTION_EXIT
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.INTERSTITIAL_THEME_APPLIED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.INTERSTITIAL_THEME_ENTER
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.INTERSTITIAL_TRANSLATION_ENTER
@@ -123,6 +120,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.content.edit
+import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.IS_PURCHASED
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.BillingManager
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_THEMES_LIST
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_TEXT_TRANSLATOR
 
 class FOFStartActivity : AppCompatActivity() {
     private var firstOpenFlowAdIds: HashMap<String, String> = HashMap()
@@ -258,7 +260,8 @@ class FOFStartActivity : AppCompatActivity() {
                     myRemoteConfigData = remoteConfigData
                 )
 
-                if (NetworkCheck.isNetworkAvailable(this) && remoteConfigData.getValue(BANNER_SPLASH) == true) {
+                if (NetworkCheck.isNetworkAvailable(this) && remoteConfigData.getValue(BANNER_SPLASH) == true && !prefs.getBoolean(
+                        IS_PURCHASED,false)){
                     binding.bannerAd.visibility = View.VISIBLE
                     Log.e("bannerid", "${remoteConfigData.getValue(BANNER_SPLASH)}")
                     loadAdmobBannerAd()
@@ -728,6 +731,40 @@ class FOFStartActivity : AppCompatActivity() {
 
         if (!TextUtils.isEmpty(
                 mFirebaseRemoteConfig!!.getString(
+                    NATIVE_TEXT_TRANSLATOR
+                ).trim()
+            )
+        ) {
+            getSharedPreferences("RemoteConfig", MODE_PRIVATE).edit()
+                .putString(
+                    NATIVE_TEXT_TRANSLATOR,
+                    mFirebaseRemoteConfig!!.getString(NATIVE_TEXT_TRANSLATOR)
+                ).apply()
+        }
+
+        if (!TextUtils.isEmpty(
+                mFirebaseRemoteConfig!!.getString(
+                    BANNER_THEMES_LIST
+                ).trim()
+            )
+        ) {
+            getSharedPreferences("RemoteConfig", MODE_PRIVATE).edit().putString(BANNER_THEMES_LIST,
+                mFirebaseRemoteConfig!!.getString(BANNER_THEMES_LIST)
+                ).apply()
+        }
+
+        if (!TextUtils.isEmpty(mFirebaseRemoteConfig!!.getString(INTERSTITIAL_SUBSCRIPTION_EXIT).trim()))
+        { getSharedPreferences("RemoteConfig", MODE_PRIVATE).edit {
+                putString(
+                    INTERSTITIAL_SUBSCRIPTION_EXIT,
+                    mFirebaseRemoteConfig!!.getString(INTERSTITIAL_SUBSCRIPTION_EXIT)
+                )
+            }
+        }
+
+
+        if (!TextUtils.isEmpty(
+                mFirebaseRemoteConfig!!.getString(
                     INTERSTITIAL_STICKER_ENTER
                 ).trim()
             )
@@ -1147,15 +1184,12 @@ class FOFStartActivity : AppCompatActivity() {
             this["INTERSTITIAL_LETS_START"] =
                 prefs.getBoolean(RemoteConfigConst.INTERSTITIAL_LETS_START, false)
             this["TIMER_NATIVE_F_SRC"] = "${prefs.getString(TIMER_NATIVE_F_SRC, "Empty")}"
-            this["IS_PURCHASED"] = false
+            this["IS_PURCHASED"] = prefs.getBoolean(IS_PURCHASED, false)
 
         }
         return remoteConfigHashMap
     }
 
-//
-//
-//    }
 
     private fun fillAdIdsFromRemote(remoteConfig: FirebaseRemoteConfig) {
         firstOpenFlowAdIds.apply {
@@ -1226,6 +1260,11 @@ class FOFStartActivity : AppCompatActivity() {
         } else {
             Log.w(logTagAdmob, "Google Play Services not available — skipping AdMob init")
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        BillingManager.getInstance(this).checkActivePurchases()
     }
 
     private fun checkAppUpdate(context: Context) {

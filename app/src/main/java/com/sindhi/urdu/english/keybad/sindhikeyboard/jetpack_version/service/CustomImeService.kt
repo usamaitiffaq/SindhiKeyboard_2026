@@ -128,6 +128,7 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.domain.keyb
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.domain.keyboard_classes.LayoutState
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.selectKeyboard
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.keyboardLayout.MyKeyboard
+import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.AdObject.keyPadBannerFailedShowTime
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.AdObject.nativeAdMobHashMapKeypad
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.CustomFirebaseEvents
@@ -136,6 +137,7 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.AdObject.keyPadBanner
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.AdObject.keyPadBannerFailedShowTimeMintegral
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.AdObject.nativeMintegralHashMapKeypad
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.DictionaryObject.suggestionList
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.KEYPAD_AD_MEDIATION
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.KEYPAD_AD_VISIBILITY
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_KEYPAD
@@ -1340,6 +1342,9 @@ class ComposeKeyboardView(private val imeService: CustomImeService) :
         val context = LocalContext.current
         val showKeyboardBannerAd = isNetworkAvailable
         val isKeyboardOpen = imeService.isKeyboardOpen
+        val isPurchase =
+            imeService.getSharedPreferences(RemoteConfigConst.REMOTE_CONFIG, Context.MODE_PRIVATE)
+                .getBoolean(Preferences.IS_PURCHASED, false)
 
         // Keep these explicitly if you need them to force recomposition,
         // otherwise they might not be needed if only used in the if-check.
@@ -1357,9 +1362,13 @@ class ComposeKeyboardView(private val imeService: CustomImeService) :
                 val isNoIAP = imeService.getInAppPurchases == 0
                 val isRemoteConfigVisible = imeService.getRemoteConfigVisibility == 1
                 // Warning: .get() on main thread can cause ANRs.
-                val isForeground = try { !ForegroundCheckTask().execute(context).get() } catch (e: Exception) { false }
+                val isForeground = try {
+                    !ForegroundCheckTask().execute(context).get()
+                } catch (e: Exception) {
+                    false
+                }
 
-                if (isNetworkReady && isNoIAP && isRemoteConfigVisible && isForeground) {
+                if (isNetworkReady && isNoIAP && !isPurchase && isRemoteConfigVisible && isForeground) {
                     if (imeService.getRemoteConfigAdmob == 1 && minutesPassedAdmob()) {
                         // Use the new specialized container
                         AdmobSafeContainer(imeService)

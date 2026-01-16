@@ -43,7 +43,7 @@ android {
         release {
             signingConfig = signingConfigs.getByName("release")
             manifestPlaceholders = [crashlyticsCollectionEnabled:"true"]
-            minifyEnabled false
+            minifyEnabled true
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             resValue "string", "ShowPopups", '"false"'
@@ -177,7 +177,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation libs.androidx.preference.ktx
     implementation libs.dexter
-//    implementation(libs.billing.ktx)
     implementation libs.library
     api libs.commons.io
     implementation libs.androidx.activity.compose
@@ -201,7 +200,7 @@ dependencies {
     implementation(libs.pangle)
     implementation(libs.applovin)
     implementation libs.zt.zip
+    implementation(libs.billing.ktx)
     implementation("androidx.compose.material:material-icons-extended")
-    implementation 'com.android.billingclient:billing-ktx:6.1.0'
     implementation "androidx.asynclayoutinflater:asynclayoutinflater:1.0.0"
 }

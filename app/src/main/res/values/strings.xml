@@ -135,4 +135,35 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="label_write_to_translate">Write to translate…</string>
+    <string name="label_details">Details</string>
+    <string name="details">Details</string>
+    <string name="upgrade_to_premium_amp_get"><![CDATA[Upgrade to Premium & Get]]></string>
+    <string name="ad_free_experience">Ad-Free Experience</string>
+    <string name="label_free_photo_translator_to_multiple_languages">Free Photo Translator to Multiple Languages</string>
+    <string name="label_cancel_subscription">You may manage or cancel subscriptions on</string>
+    <string name="label_cancel_subscription_on_google"><u>Google Play</u></string>
+    <string name="term_amp_services"><u>Term &amp; Services</u></string>
+    <string name="label_privacy_policy"><u>Privacy Policy</u></string>
+    <string name="how_to_unsubscribe"><u>How to Unsubscribe?</u></string>
+    <string name="label_ad_free_exp">Ad-Free Experience:</string>
+    <string name="label_ad_free_experience_des">Enjoy an ad-free environment with the Urdu Keyboard VIP subscription.</string>
+    <string name="label_payment_process">Payment Process:</string>
+    <string name="label_payment_process_des">Once you confirm a purchase, the subscription fee will be billed through the Google Play Store.</string>
+    <string name="label_cancellation_terms">Cancellation Terms:</string>
+    <string name="label_cancellation_terms_des">If you decide to cancel, the subscription will remain active until the end of the current month or year billing cycle.</string>
+    <string name="label_automatic_renewal">Automatic Renewal:</string>
+    <string name="label_loading_subscription_details">Loading Subscription Details</string>
+    <string name="label_automatic_renewal_des">Subscriptions will automatically renew, unless you turn off the auto-renewal feature at least 24 hours before the current period ends.</string>
+    <string name="label_managing_your_subs">Managing Your Subscription:</string>
+    <string name="label_managing_your_subs_des">You have the control to manage your subscription and disable auto-renewal in your Google Play Store account settings.</string>
+    <string name="label_manage_subscrptions">Manage Subscription</string>
+    <string name="manage_subscription_here">Manage Subscription here,</string>
+    <string name="no_initial_payment_cancel_anytime">No Initial Payment, Cancel Anytime</string>
+    <string name="get_premium_now">Get Premium Now</string>
+    <string name="all_features_unlocked">All Features Unlocked</string>
+    <string name="access_all_features">Access All Features</string>
+    <string name="access_all_features_icon">Access All Features Icon</string>
+    <string name="_100_ads_free_experience">100% Ads Free Experience</string>
+    <string name="no_ads">No Ads</string>
+    <string name="unlimited_access">Unlimited Access</string>
 </resources>

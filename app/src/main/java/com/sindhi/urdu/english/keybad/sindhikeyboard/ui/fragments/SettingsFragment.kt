@@ -18,15 +18,13 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
+import com.airbnb.lottie.LottieAnimationView
 import com.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
-import com.google.firebase.analytics.FirebaseAnalytics.Event.PURCHASE
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.FragmentSettingsBinding
@@ -38,17 +36,22 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.COLLAPSIBLE_SETTINGS
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.screens.PreferenceScreen
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_OVER_ALL
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.OVERALL_BANNER_RELOADING
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 
 class SettingsFragment : Fragment() {
-
     private lateinit var binding: FragmentSettingsBinding
     lateinit var navController: NavController
-    var isPurchased: Boolean? = null
+    private var isPurchase = false
     var bundle = Bundle()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?, ): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         binding = FragmentSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -64,41 +67,61 @@ class SettingsFragment : Fragment() {
             )
         }
 
-        bundle.putString("SettingsFragment","SettingsFragment")
+        bundle.putString("SettingsFragment", "SettingsFragment")
         ApplicationClass.firebaseAnalyticsEventsLog.logEvent("event_settings", bundle)
 
         if (isAdded) {
             navController = findNavController()
         }
 
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PURCHASE, false)
+        isPurchase = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+            ?.getBoolean(IS_PURCHASED, false) == true
 
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
 
-                navController.let {
-                    if (it.currentDestination?.id == R.id.settingsFragment) {
-                        it.navigate(SettingsFragmentDirections.actionSettingsFragmentToNavHome())
-                    } else {
-                        it.popBackStack()
+                    navController.let {
+                        if (it.currentDestination?.id == R.id.settingsFragment) {
+                            it.navigate(SettingsFragmentDirections.actionSettingsFragmentToNavHome())
+                        } else {
+                            it.popBackStack()
+                        }
                     }
                 }
-            }
-        })
+            })
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onResume() {
         super.onResume()
-        requireActivity().hideSystemUIUpdated()
         val ivClose = requireActivity().findViewById<ImageView>(R.id.ivClose)
         if (ivClose != null) {
             ivClose.visibility = View.INVISIBLE
         }
 
-        val txtSindhiKeyboard = requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
+        val ivPurchase = requireActivity().findViewById<LottieAnimationView>(R.id.ivPurchase)
+
+        if (ivPurchase != null) {
+            ivPurchase.visibility = View.INVISIBLE
+        }
+
+        if (ivClose != null) {
+            ivClose.visibility = View.INVISIBLE
+        }
+
+
+
+        val txtSindhiKeyboard =
+            requireActivity().findViewById<AppCompatTextView>(R.id.txtSindhiKeyboard)
         if (txtSindhiKeyboard != null) {
-            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(requireContext(), R.drawable.back),null,null,null)
+            txtSindhiKeyboard.setCompoundDrawablesWithIntrinsicBounds(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.back
+                ), null, null, null
+            )
             txtSindhiKeyboard.text = resources.getString(R.string.label_settings)
 
             val startDrawable = txtSindhiKeyboard.compoundDrawables[0]
@@ -115,14 +138,18 @@ class SettingsFragment : Fragment() {
         }
 
         if (NetworkCheck.isNetworkAvailable(requireActivity())
-            && !isPurchased!!
-            && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(ADS_NATIVE_SETTINGS,"ON").equals("ON",true)) {
+            && !isPurchase
+            && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+                .getString(ADS_NATIVE_SETTINGS, "ON").equals("ON", true)
+        ) {
             binding.nativeAdContainerAd.visibility = View.VISIBLE
             binding.separator.visibility = View.VISIBLE
             loadAdmobNativeAd()
         } else if (NetworkCheck.isNetworkAvailable(requireActivity())
-            && !isPurchased!!
-            && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(COLLAPSIBLE_SETTINGS,"ON").equals("ON",true)) {
+            && !isPurchase
+            && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+                .getString(COLLAPSIBLE_SETTINGS, "ON").equals("ON", true)
+        ) {
             binding.shimmerLayoutBanner.startShimmer()
             binding.shimmerLayoutBanner.visibility = View.VISIBLE
             binding.adViewContainer.visibility = View.VISIBLE
@@ -137,16 +164,15 @@ class SettingsFragment : Fragment() {
     }
 
     private fun loadAdmobNativeAd() {
-        val pref =requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-        val adId  =if (!BuildConfig.DEBUG){
-            pref.getString(NATIVE_OVER_ALL,"ca-app-pub-3747520410546258/1702944653")
-        }
-        else{
+        val pref = requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+        val adId = if (!BuildConfig.DEBUG) {
+            pref.getString(NATIVE_OVER_ALL, "ca-app-pub-3747520410546258/1702944653")
+        } else {
             resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
         }
         NewNativeAdClass.checkAdRequestAdmob(
             mContext = requireActivity(),
-            adId =adId!!,
+            adId = adId!!,
             fragmentName = "SettingsFragment",
             isMedia = false,
             adContainer = binding.nativeAdContainerAd,
@@ -164,7 +190,8 @@ class SettingsFragment : Fragment() {
 
     private fun loadAdmobCollapsibleBannerAd() {
         if (NativeMaster.collapsibleBannerAdMobHashMap!!.containsKey("SettingsFragment")) {
-            val collapsibleAdView: AdView? = NativeMaster.collapsibleBannerAdMobHashMap!!["SettingsFragment"]
+            val collapsibleAdView: AdView? =
+                NativeMaster.collapsibleBannerAdMobHashMap!!["SettingsFragment"]
             Handler().postDelayed({
                 binding.shimmerLayoutBanner.stopShimmer()
                 binding.shimmerLayoutBanner.visibility = View.GONE
@@ -175,18 +202,17 @@ class SettingsFragment : Fragment() {
                 parent?.removeView(collapsibleAdView)
 
                 binding.adViewContainer.addView(collapsibleAdView)
-            },500)
+            }, 500)
         } else {
             loadCollapsibleBanner()
         }
     }
 
     private fun loadCollapsibleBanner() {
-        val pref =requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-        val adId  =if (!BuildConfig.DEBUG){
-            pref.getString(BANNER_INSIDE,"ca-app-pub-3747520410546258/1697692330")
-        }
-        else{
+        val pref = requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+        val adId = if (!BuildConfig.DEBUG) {
+            pref.getString(BANNER_INSIDE, "ca-app-pub-3747520410546258/1697692330")
+        } else {
             resources.getString(R.string.ADMOB_NATIVE_LANGUAGE_2)
         }
 
@@ -205,7 +231,9 @@ class SettingsFragment : Fragment() {
             override fun onAdLoaded() {
                 binding.adViewContainer.removeAllViews()
                 binding.adViewContainer.addView(adView)
-                if (requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE).getString(OVERALL_BANNER_RELOADING, "SAVE").equals("SAVE")) {
+                if (requireActivity().getSharedPreferences("RemoteConfig", MODE_PRIVATE)
+                        .getString(OVERALL_BANNER_RELOADING, "SAVE").equals("SAVE")
+                ) {
                     NativeMaster.collapsibleBannerAdMobHashMap!!["SettingsFragment"] = adView
                 }
                 binding.separator.visibility = View.VISIBLE
@@ -247,6 +275,9 @@ class SettingsFragment : Fragment() {
             }
 
             val adWidth = (adWidthPixels / density).toInt()
-            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(requireActivity(), adWidth)
+            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                requireActivity(),
+                adWidth
+            )
         }
 }

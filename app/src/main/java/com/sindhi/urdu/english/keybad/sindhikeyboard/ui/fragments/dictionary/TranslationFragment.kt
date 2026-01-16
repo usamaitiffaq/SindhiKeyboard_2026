@@ -41,8 +41,10 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences.COLLAPSIBLE_TRANSLATION
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.PURCHASE
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.IS_PURCHASED
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_CONVERSATION
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.OVERALL_BANNER_RELOADING
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.REMOTE_CONFIG
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.blockingClickListener
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.safeNavigate
 
@@ -51,7 +53,7 @@ class TranslationFragment : Fragment() {
     var navController: NavController? = null
     lateinit var mSharedPreferences: SharedPreferences
     var bundle = Bundle()
-    var isPurchased: Boolean? = null
+    var isPurchase = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,10 +68,11 @@ class TranslationFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         isNavControllerAdded()
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .getBoolean(PURCHASE, false)
+        isPurchase = requireContext().getSharedPreferences(REMOTE_CONFIG, MODE_PRIVATE)
+            ?.getBoolean(IS_PURCHASED, false) == true
+
         if (isNetworkAvailable(requireActivity())
-            && !isPurchased!!
+            && !isPurchase
             && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
                 .getString(COLLAPSIBLE_TRANSLATION, "ON").equals("ON", true)
         ) {
@@ -94,7 +97,7 @@ class TranslationFragment : Fragment() {
         }
 
         if (isNetworkAvailable(requireActivity())
-            && !isPurchased!!
+            && !isPurchase
             && requireActivity().getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
                 .getString(ADS_NATIVE_TRANSLATION_HOME, "ON").equals("ON", true)
         ) {
@@ -157,41 +160,54 @@ class TranslationFragment : Fragment() {
         }
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isNavControllerAdded()
-
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         bundle.putString("TranslationFragment", "TranslationFragment")
         ApplicationClass.firebaseAnalyticsEventsLog.logEvent("event_translation", bundle)
 
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+//        requireActivity().onBackPressedDispatcher
+//            .addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+//                override fun handleOnBackPressed() {
+//                    if (navController != null) {
+//                        val action =
+//                            TranslationFragmentDirections.actionTranslationFragmentToNavHome()
+//                        navController?.safeNavigate(action)
+//                    } else {
+//                        isNavControllerAdded()
+//                    }
+//                }
+//            })
 
-        isPurchased = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .getBoolean(PURCHASE, false)
-
-        requireActivity().onBackPressedDispatcher
-            .addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    if (navController != null) {
-                        val action =
-                            TranslationFragmentDirections.actionTranslationFragmentToNavHome()
-                        navController?.safeNavigate(action)
-                    } else {
-                        isNavControllerAdded()
-                    }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // FIX: Check if we are actually on the TranslationFragment before navigating
+                if (navController?.currentDestination?.id == R.id.translationFragment) {
+                    val action = TranslationFragmentDirections.actionTranslationFragmentToNavHome()
+                    navController?.safeNavigate(action)
+                } else {
+                    // If we are on a different tab/fragment, let the system handle the back press naturally
+                    isEnabled = false
+                    requireActivity().onBackPressed()
+                    isEnabled = true
                 }
-            })
+            }
+        })
 
         binding.clTextTranslator.blockingClickListener {
-            val action= TranslationFragmentDirections.actionTranslationToTextTranslation()
+            val action = TranslationFragmentDirections.actionTranslationToTextTranslation()
             navController?.navigate(action)
         }
 
 
 
         binding.clTextToAudioFile.blockingClickListener {
-            Toast.makeText(requireActivity(), getString(R.string.label_coming_soon), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireActivity(),
+                getString(R.string.label_coming_soon),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         binding.clFavourite.blockingClickListener {
@@ -204,7 +220,7 @@ class TranslationFragment : Fragment() {
 
         binding.clConversation.blockingClickListener {
             if (navController != null) {
-                if (isPurchased!!) {
+                if (isPurchase!!) {
                     btnClConversation()
                 } else {
                     if (isNetworkAvailable(requireContext())
@@ -234,7 +250,7 @@ class TranslationFragment : Fragment() {
 
         binding.clSpeechToText.blockingClickListener {
             if (navController != null) {
-                if (isPurchased!!) {
+                if (isPurchase!!) {
                     btnClSpeechToText()
                 } else {
                     if (isNetworkAvailable(requireContext())
@@ -264,7 +280,7 @@ class TranslationFragment : Fragment() {
 
         binding.clHistory.blockingClickListener {
             if (navController != null) {
-                if (isPurchased!!) {
+                if (isPurchase!!) {
                     val action =
                         TranslationFragmentDirections.actionTranslationFragmentToHistoryFragment()
                     navController?.safeNavigate(action)
@@ -422,4 +438,5 @@ class TranslationFragment : Fragment() {
                 adWidth
             )
         }
+
 }

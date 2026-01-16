@@ -26,12 +26,12 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import com.manual.mediation.library.sotadlib.activities.AppCompatBaseActivity
 import com.manual.mediation.library.sotadlib.utils.NetworkCheck
-import com.manual.mediation.library.sotadlib.utils.hideSystemUIUpdated
 import com.sindhi.urdu.english.keybad.BuildConfig
 import com.sindhi.urdu.english.keybad.R
 import com.sindhi.urdu.english.keybad.databinding.ActivityStickersDetailsBinding
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NativeMaster
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ads.NewNativeAdClass
+import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.preferences.Preferences
 import com.sindhi.urdu.english.keybad.sindhikeyboard.jetpack_version.utilityClasses.blockingClickListener
 import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerDataCache
 import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerDataCache.downloadInProgressMap
@@ -39,6 +39,7 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerDataCache.p
 import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerPackData
 import com.sindhi.urdu.english.keybad.sindhikeyboard.stickers.StickerViewModel
 import com.sindhi.urdu.english.keybad.sindhikeyboard.ui.adapters.StickersDetailsAdapter
+import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_INSIDE
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.BANNER_STICKER_DETAILS
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.NATIVE_OVER_ALL
@@ -55,7 +56,7 @@ class StickersDetailsActivity : AppCompatBaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityStickersDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        hideSystemUIUpdated()
+
         supportActionBar?.hide()
 
         setStatusBarColor(this@StickersDetailsActivity,resources.getColor(R.color.maroon_500))
@@ -142,12 +143,13 @@ class StickersDetailsActivity : AppCompatBaseActivity() {
         super.onResume()
 
         if (NetworkCheck.isNetworkAvailable(this)
+            && !getSharedPreferences(RemoteConfigConst.REMOTE_CONFIG, Context.MODE_PRIVATE).getBoolean(Preferences.IS_PURCHASED,false)
             && getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(NATIVE_STICKERS_DETAILS,"ON").equals("ON",true)) {
             binding.nativeAdContainerAd.visibility = View.VISIBLE
             binding.separator.visibility=View.VISIBLE
             loadAdmobNativeAd()
         } else if (NetworkCheck.isNetworkAvailable(this)
-            
+            && !getSharedPreferences(RemoteConfigConst.REMOTE_CONFIG, Context.MODE_PRIVATE).getBoolean(Preferences.IS_PURCHASED,false)
             && getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE).getString(BANNER_STICKER_DETAILS,"ON").equals("ON",true)) {
             binding.shimmerLayoutBanner.startShimmer()
             binding.shimmerLayoutBanner.visibility = View.VISIBLE
