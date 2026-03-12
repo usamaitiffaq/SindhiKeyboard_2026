@@ -293,40 +293,9 @@ class CustomImeService : InputMethodService(), LifecycleOwner, ViewModelStoreOwn
         imeActionType = info.imeOptions and EditorInfo.IME_MASK_ACTION
     }
 
-
-
-
-
-
     override fun onCreate() {
         super.onCreate() // View inflation happens here
         Log.i("CustomImeService", "onCreate()")
-
-
-//        if (BuildConfig.DEBUG) {
-//            StrictMode.setThreadPolicy(
-//                StrictMode.ThreadPolicy.Builder()
-//                    .detectDiskReads()
-//                    .detectDiskWrites()
-//                    .detectNetwork()
-//                    .detectCustomSlowCalls()
-//                    .penaltyLog() // Prints the exact line of code to Logcat
-//                    .penaltyFlashScreen() // Flashes the screen red on your test device
-//                    // .penaltyDeath() // Uncomment this if you want the app to actually crash on purpose
-//                    .build()
-//            )
-//
-//            StrictMode.setVmPolicy(
-//                StrictMode.VmPolicy.Builder()
-//                    .detectLeakedClosableObjects()
-//                    .detectLeakedSqlLiteObjects()
-//                    .penaltyLog()
-//                    .build()
-//            )
-//        }
-
-
-
         try {
             savedStateRegistryVar.performRestore(null)
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -618,9 +587,14 @@ class CustomImeService : InputMethodService(), LifecycleOwner, ViewModelStoreOwn
     }
 
     suspend fun getCompleteTextForSuggestionAsync(): String {
-        return withContext(Dispatchers.Main.immediate) {
-            currentInputConnection?.getExtractedText(ExtractedTextRequest(), 0)?.text?.toString()
-                ?: ""
+        // Shift this IPC call to a background thread!
+        return withContext(Dispatchers.IO) {
+            try {
+                currentInputConnection?.getExtractedText(ExtractedTextRequest(), 0)?.text?.toString() ?: ""
+            } catch (e: Exception) {
+                Log.e("CustomImeService", "Failed to extract text", e)
+                ""
+            }
         }
     }
 
@@ -1179,10 +1153,12 @@ class CustomImeService : InputMethodService(), LifecycleOwner, ViewModelStoreOwn
             mFirebaseRemoteConfig?.fetchAndActivate()?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     mFirebaseRemoteConfig?.activate()
-
-                    saveAllRemoteConfigs()
+                    // Push the database writes to the background!
+                    CoroutineScope(Dispatchers.IO).launch {
+                        saveAllRemoteConfigs()
+                    }
                 } else {
-                    if (context.resources.getString(R.string.ShowPopups).equals("true")) {
+                    if (context.resources.getString(R.string.ShowPopups) == "true") {
                         Log.e("NativeAdKeyboard", "RemoteConfig Failed")
                     }
                 }
@@ -1478,13 +1454,14 @@ class ComposeKeyboardView(private val imeService: CustomImeService) :
         }
     }
 
+
+
     private fun reloadAdAdmob(
         mContext: CustomImeService?,
         shimmerBanner: ShimmerFrameLayout,
         defaultAdviewBanner: NativeAdView
     ) {
         if (mContext == null) return
-
         val timeoutHandler = Handler(Looper.getMainLooper())
         val timeoutRunnable = Runnable {
             Log.e(logTagAdmob, "AdMob ad loading timeout")
@@ -1492,80 +1469,94 @@ class ComposeKeyboardView(private val imeService: CustomImeService) :
             shimmerBanner.visibility = View.GONE
             defaultAdviewBanner.visibility = View.GONE
         }
-
-        val defBanner = "ca-app-pub-3747520410546258/9389862986"
-
-        val pref = mContext.getSharedPreferences("RemoteConfig", MODE_PRIVATE)
-        val adId = if (!BuildConfig.DEBUG) {
-            pref?.getString(NATIVE_KEYPAD, defBanner)
-        } else {
-            mContext.resources.getString(R.string.admob_native_home)
-        } ?: defBanner
-
-
-        Log.e("nativeAd", "Requesting AdMob ad with ID: $adId")
-
         timeoutHandler.postDelayed(timeoutRunnable, 15000) // 15 sec timeout
+        // 1. Launch a Coroutine to handle the heavy setup in the background
+        CoroutineScope(Dispatchers.Main).launch {
 
-        CustomFirebaseEvents.nativeKeypadAdEvent(mContext, "AdmobRequestNewAd")
-
-        val builder = AdLoader.Builder(mContext.applicationContext, adId)
-
-        builder.forNativeAd { mNativeAd: NativeAd ->
-            timeoutHandler.removeCallbacks(timeoutRunnable)
-            handlerAd.removeCallbacks(reloadAdRunnable)
-
-            val currTime = System.currentTimeMillis()
-            nativeAdMobHashMapKeypad?.set(mContext::class.java.name, Pair(mNativeAd, currTime))
-
-            handlerAd.postDelayed(reloadAdRunnable, 1500000) // 25 min
-            populateNativeAdmob(mNativeAd, shimmerBanner, defaultAdviewBanner)
-
-            Log.e(logTagAdmob, "ReloadAd: ${nativeAdMobHashMapKeypad?.size}")
-        }
-
-        val adOptions = NativeAdOptions.Builder()
-            .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
-            .build()
-        builder.withNativeAdOptions(adOptions)
-
-        val adLoader = builder.withAdListener(object : AdListener() {
-            override fun onAdFailedToLoad(errorCode: LoadAdError) {
-                timeoutHandler.removeCallbacks(timeoutRunnable)
-                Log.e(logTagAdmob, "Admob Native Failed to Load: $errorCode")
-                CustomFirebaseEvents.nativeKeypadAdEvent(mContext, "AdmobOnAdFailedToLoad")
-
-                shimmerBanner.stopShimmer()
-                shimmerBanner.visibility = View.GONE
-                defaultAdviewBanner.visibility = View.GONE
-
-                nativeAdMobHashMapKeypad?.remove(mContext::class.java.name)
-
-                saveCurrentTimeAdmob() // make sure this exists
-            }
-
-            override fun onAdClicked() {
-                super.onAdClicked()
-                CustomFirebaseEvents.nativeKeypadAdEvent(mContext, "AdmobOnAdClicked")
-                nativeAdMobHashMapKeypad?.remove(mContext::class.java.name)
-            }
-
-            override fun onAdLoaded() {
-                timeoutHandler.removeCallbacks(timeoutRunnable)
-                super.onAdLoaded()
-                CustomFirebaseEvents.nativeKeypadAdEvent(mContext, "AdmobOnAdLoaded")
-                Log.e(logTagAdmob, "Admob Native Loaded..")
-
-                if (BuildConfig.DEBUG) {
-                    Toast.makeText(mContext, "Keypad :: AdMob :: Loaded", Toast.LENGTH_SHORT).show()
+            // 2. Offload the SharedPreferences Disk Read to the IO Thread
+            val adId = withContext(Dispatchers.IO) {
+                val defBanner = "ca-app-pub-3747520410546258/9389862986"
+                val pref = mContext.getSharedPreferences("RemoteConfig", Context.MODE_PRIVATE)
+                if (!BuildConfig.DEBUG) {
+                    pref.getString(NATIVE_KEYPAD, defBanner) ?: defBanner
+                } else {
+                    mContext.resources.getString(R.string.admob_native_home)
                 }
             }
-        }).build()
 
-        adLoader.loadAd(AdRequest.Builder().build())
+            // 3. Offload building the AdRequest to the IO Thread (can sometimes be heavy)
+            val adRequest = withContext(Dispatchers.IO) {
+                AdRequest.Builder().build()
+            }
 
-        if (BuildConfig.DEBUG) {
-            Toast.makeText(mContext, "Keypad :: AdMob :: Request", Toast.LENGTH_SHORT).show()
+            Log.e("nativeAd", "Requesting AdMob ad with ID: $adId")
+            CustomFirebaseEvents.nativeKeypadAdEvent(mContext, "AdmobRequestNewAd")
+
+            // 4. Safely back on the Main Thread strictly for AdMob UI requirements
+            try {
+                val builder = AdLoader.Builder(mContext.applicationContext, adId)
+
+                builder.forNativeAd { mNativeAd: NativeAd ->
+                    timeoutHandler.removeCallbacks(timeoutRunnable)
+                    handlerAd.removeCallbacks(reloadAdRunnable)
+
+                    val currTime = System.currentTimeMillis()
+                    nativeAdMobHashMapKeypad?.set(mContext::class.java.name, Pair(mNativeAd, currTime))
+
+                    handlerAd.postDelayed(reloadAdRunnable, 1500000) // 25 min
+                    populateNativeAdmob(mNativeAd, shimmerBanner, defaultAdviewBanner)
+
+                    Log.e(logTagAdmob, "ReloadAd: ${nativeAdMobHashMapKeypad?.size}")
+                }
+
+                val adOptions = NativeAdOptions.Builder()
+                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
+                    .build()
+                builder.withNativeAdOptions(adOptions)
+
+                val adLoader = builder.withAdListener(object : AdListener() {
+                    override fun onAdFailedToLoad(errorCode: LoadAdError) {
+                        timeoutHandler.removeCallbacks(timeoutRunnable)
+                        Log.e(logTagAdmob, "Admob Native Failed to Load: $errorCode")
+                        CustomFirebaseEvents.nativeKeypadAdEvent(mContext, "AdmobOnAdFailedToLoad")
+
+                        shimmerBanner.stopShimmer()
+                        shimmerBanner.visibility = View.GONE
+                        defaultAdviewBanner.visibility = View.GONE
+
+                        nativeAdMobHashMapKeypad?.remove(mContext::class.java.name)
+                    }
+
+                    override fun onAdClicked() {
+                        super.onAdClicked()
+                        CustomFirebaseEvents.nativeKeypadAdEvent(mContext, "AdmobOnAdClicked")
+                        nativeAdMobHashMapKeypad?.remove(mContext::class.java.name)
+                    }
+
+                    override fun onAdLoaded() {
+                        timeoutHandler.removeCallbacks(timeoutRunnable)
+                        super.onAdLoaded()
+                        CustomFirebaseEvents.nativeKeypadAdEvent(mContext, "AdmobOnAdLoaded")
+                        Log.e(logTagAdmob, "Admob Native Loaded..")
+
+                        if (BuildConfig.DEBUG) {
+                            Toast.makeText(mContext, "Keypad :: AdMob :: Loaded", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }).build()
+
+                // 5. Load the ad using the background-built request
+                adLoader.loadAd(adRequest)
+
+                if (BuildConfig.DEBUG) {
+                    Toast.makeText(mContext, "Keypad :: AdMob :: Request", Toast.LENGTH_SHORT).show()
+                }
+
+            } catch (e: Exception) {
+                // Failsafe just in case the Binder/IPC crashes completely
+                Log.e(logTagAdmob, "Critical exception building AdLoader", e)
+                timeoutHandler.removeCallbacks(timeoutRunnable)
+            }
         }
     }
 
