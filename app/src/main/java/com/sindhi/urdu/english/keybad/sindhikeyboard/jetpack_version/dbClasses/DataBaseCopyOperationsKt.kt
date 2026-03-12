@@ -12,12 +12,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
+
 
 @SuppressLint("StaticFieldLeak")
-object DataBaseCopyOperationsKt : SQLiteOpenHelper(null,"dictionary_74.db", null, 1) {
+object DataBaseCopyOperationsKt : SQLiteOpenHelper(null, "dictionary_74.db", null, 1) {
 
     private lateinit var myContext: Context
 
@@ -27,12 +25,7 @@ object DataBaseCopyOperationsKt : SQLiteOpenHelper(null,"dictionary_74.db", null
     private val databasePath: String
         get() = myContext.getDatabasePath(DATABASE_NAME).path
 
-    private val myDataBase: SQLiteDatabase by lazy {
-        synchronized(this) {
-            SQLiteDatabase.openDatabase(databasePath, null, SQLiteDatabase.OPEN_READWRITE)
-        }
-    }
-
+    // Fast-path boolean to prevent checking the file system multiple times
     @Volatile
     private var isDatabaseCopied = false
 
@@ -55,8 +48,11 @@ object DataBaseCopyOperationsKt : SQLiteOpenHelper(null,"dictionary_74.db", null
         }
     }
 
-
+    // Synchronize ONLY the creation part so threads don't copy the file twice
+    @Synchronized
     fun createDatabaseIfNotExists(myContext: Context) {
+        if (isDatabaseCopied) return
+
         val dbFile = File(databasePath)
         if (!dbFile.exists()) {
             try {
@@ -66,7 +62,7 @@ object DataBaseCopyOperationsKt : SQLiteOpenHelper(null,"dictionary_74.db", null
                     }
                 }
                 // Copy database from assets
-                myContext.assets.open("dictionary_74.db").use { inputStream ->
+                myContext.assets.open(DATABASE_NAME).use { inputStream ->
                     FileOutputStream(dbFile).use { outputStream ->
                         val buffer = ByteArray(1024)
                         var length: Int
@@ -77,33 +73,19 @@ object DataBaseCopyOperationsKt : SQLiteOpenHelper(null,"dictionary_74.db", null
                     }
                 }
                 Log.d("DatabaseCopy", "Database copied successfully.")
+                isDatabaseCopied = true
             } catch (e: Exception) {
                 Log.e("DatabaseCopy", "Error copying database: $databasePath", e)
             }
         } else {
+            isDatabaseCopied = true
             Log.d("DatabaseCopy", "Database already exists.")
         }
     }
 
-
     private fun checkDataBase(): Boolean {
         val dbFile = File(databasePath)
         return dbFile.exists() && dbFile.length() > 0
-    }
-
-
-    private fun copyDataBase() {
-        // Copy from assets
-        myContext.assets.open(DATABASE_NAME).use { input ->
-            FileOutputStream(databasePath).use { output ->
-                input.copyTo(output)
-                output.fd.sync() // Force sync to disk
-            }
-        }
-
-        if (!checkDataBase()) {
-            throw IOException("Database copy verification failed")
-        }
     }
 
     @Synchronized
@@ -111,27 +93,25 @@ object DataBaseCopyOperationsKt : SQLiteOpenHelper(null,"dictionary_74.db", null
         File(databasePath).takeIf { it.exists() }?.delete()
     }
 
+    // THE ANR FIX: No more synchronized(this) block wrapping the entire operation
     private inline fun <T> executeWithDatabase(action: (SQLiteDatabase) -> T): T {
         ensureInitialized()
 
-        // Make sure copy finished.
-        synchronized(this) {
+        if (!isDatabaseCopied) {
             createDatabaseIfNotExists(myContext)
-
             if (!checkDataBase()) {
                 throw IllegalStateException("Database does not exist after copy attempt.")
             }
+        }
 
-            SQLiteDatabase.openDatabase(databasePath, null, SQLiteDatabase.OPEN_READWRITE).use { db ->
-                return action(db)
-            }
+        // Open without global synchronization so Main Thread and Background Thread can run concurrently
+        SQLiteDatabase.openDatabase(databasePath, null, SQLiteDatabase.OPEN_READWRITE).use { db ->
+            return action(db)
         }
     }
 
-
     private fun ensureInitialized() {
         if (!::myContext.isInitialized) {
-            init(myContext)
             throw IllegalStateException("Context not initialized. Call init(context) first.")
         }
     }
@@ -287,13 +267,21 @@ object DataBaseCopyOperationsKt : SQLiteOpenHelper(null,"dictionary_74.db", null
             val suggestionList = mutableListOf<SuggestionItems>()
             db.rawQuery("SELECT * FROM SuggestionList", null).use { cursor ->
                 if (cursor.moveToFirst()) {
+
+                    // PERFORMANCE FIX: Find column indices ONCE outside the loop
+                    val idIndex = cursor.getColumnIndexOrThrow("id")
+                    val engIndex = cursor.getColumnIndexOrThrow("EngRomanWordsSuggestion")
+                    val urduIndex = cursor.getColumnIndexOrThrow("UrduWordsSuggestion")
+                    val normIndex = cursor.getColumnIndexOrThrow("NormalSuggestion")
+                    val dailyIndex = cursor.getColumnIndexOrThrow("DailyUseWords")
+
                     do {
                         val suggestionItem = SuggestionItems(
-                            id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
-                            engRomanWordsSuggestion = cursor.getString(cursor.getColumnIndexOrThrow("EngRomanWordsSuggestion")),
-                            urduWordsSuggestion = cursor.getString(cursor.getColumnIndexOrThrow("UrduWordsSuggestion")),
-                            normalSuggestion = cursor.getString(cursor.getColumnIndexOrThrow("NormalSuggestion")),
-                            dailyUseWords = cursor.getString(cursor.getColumnIndexOrThrow("DailyUseWords"))
+                            id = cursor.getInt(idIndex),
+                            engRomanWordsSuggestion = cursor.getString(engIndex),
+                            urduWordsSuggestion = cursor.getString(urduIndex),
+                            normalSuggestion = cursor.getString(normIndex),
+                            dailyUseWords = cursor.getString(dailyIndex)
                         )
                         suggestionList.add(suggestionItem)
                     } while (cursor.moveToNext())

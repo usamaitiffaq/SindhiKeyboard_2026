@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import com.sindhi.urdu.english.keybad.R
 import android.util.Log
+import android.webkit.WebView
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.applovin.sdk.AppLovinPrivacySettings
 import com.applovin.sdk.AppLovinSdk
@@ -36,7 +37,6 @@ import java.lang.Exception
 
 
 class ApplicationClass : Application() {
-
     companion object {
         lateinit var firebaseAnalyticsEventsLog: FirebaseAnalytics
         lateinit var resumeAdInstance: ResumeAd
@@ -53,20 +53,43 @@ class ApplicationClass : Application() {
         super.onCreate()
         applicationClass = this
 
-        FirebaseApp.initializeApp(this)
-        firebaseAnalyticsEventsLog = FirebaseAnalytics.getInstance(this)
-
-        DataBaseCopyOperationsKt.initializeAndCopy(this)
-        resumeAdInstance = ResumeAd(this)
-
-        setupRemoteConfig()
-
-        CoroutineScope(Dispatchers.Default).launch {
-            initMintegralSdk()
+        try {
+            WebView(this)
+            Log.d(TAG, "Chromium engine pre-warmed successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to pre-warm WebView", e)
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            loadSuggestions()
+        // 1. Keep only the absolute fastest, required synchronous initializations here
+        FirebaseApp.initializeApp(this)
+
+        // Note: Make sure ResumeAd doesn't do disk I/O! If it does, move it down.
+        resumeAdInstance = ResumeAd(this)
+
+
+        // 2. Evacuate all heavy lifting to the IO Dispatcher
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Move the massive database copy off the main thread
+                DataBaseCopyOperationsKt.initializeAndCopy(this@ApplicationClass)
+
+                // Firebase singletons can cause strict mode disk reads, initialize them here
+                firebaseAnalyticsEventsLog = FirebaseAnalytics.getInstance(this@ApplicationClass)
+
+                // Fetch remote config in the background
+                setupRemoteConfig()
+
+                // Load suggestions (this was already well-written as a suspend function)
+                loadSuggestions()
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during background initialization", e)
+            }
+        }
+
+        // 3. Keep SDK initializations in the background
+        CoroutineScope(Dispatchers.Default).launch {
+            initMintegralSdk()
         }
     }
 
@@ -87,8 +110,6 @@ class ApplicationClass : Application() {
                     remoteConfig.activate().addOnCompleteListener {
                         if (it.isSuccessful) {
                             Log.d(TAG, "Remote config updated and activated.")
-                            // Optionally update local DB/Prefs here if needed immediately
-                            // DataBaseCopyOperationsKt.updateFromRemoteConfig(remoteConfig)
                             notifyConfigChanged()
                         }
                     }
