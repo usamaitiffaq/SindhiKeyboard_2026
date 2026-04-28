@@ -358,30 +358,6 @@ fun switchToVoiceInputMethod(imeService: CustomImeService?, context: Context?): 
     context ?: return false
 
     imeService.startVoiceInput()
-    /*val imm = imeService?.getSystemService(InputMethodManager::class.java) ?: return false
-    // val list: List<InputMethodInfo> = imm.enabledInputMethodList
-    val list: List<InputMethodInfo> = imm.inputMethodList
-    var voiceIMEFound = false
-    for (el in list) {
-        for (i in 0 until el.subtypeCount) {
-            if (el.getSubtypeAt(i).mode == "voice") {
-                voiceIMEFound = true
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    imeService.switchInputMethod(el.id)
-                    return true
-                } else {
-                    imeService.window.window?.let { window ->
-                        @Suppress("DEPRECATION")
-                        imm.setInputMethod(window.attributes.token, el.id)
-                        return true
-                    }
-                }
-            }
-        }
-    }
-    if (!voiceIMEFound) {
-        Toast.makeText(context, "No voice input method found. Please enable or install a voice input method.", Toast.LENGTH_SHORT).show()
-    }*/
     return false
 }
 

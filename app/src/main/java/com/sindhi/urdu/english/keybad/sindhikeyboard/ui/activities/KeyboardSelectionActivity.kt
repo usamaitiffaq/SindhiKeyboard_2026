@@ -274,14 +274,19 @@ class KeyboardSelectionActivity : AppCompatBaseActivity() {
         }
 
     private fun nextMove() {
-        if (checkIfKeyboardEnabled() && isInputMethodEnabled()) {
-            activateState(true)
-            switchState(true)
-            Handler().postDelayed({
-                startActivity(Intent(this, NavigationActivity::class.java))
-                finish()
-            }, 0)
-        } else if (!checkIfKeyboardEnabled() && !isInputMethodEnabled()) {
+            if (checkIfKeyboardEnabled() && isInputMethodEnabled()) {
+                activateState(true)
+                switchState(true)
+                Handler().postDelayed({
+                    // CHANGED: Assigned intent to a variable and added startActivity()
+                    val intent = Intent(this, SubscriptionActivity::class.java).apply {
+                        putExtra("fromName", "SelectKeyboard")
+                        putExtra("MoveTo", intent.getStringExtra("MoveTo"))
+                    }
+                    startActivity(intent) // <--- THIS WAS MISSING!
+                    finish()
+                }, 0)
+            } else if (!checkIfKeyboardEnabled() && !isInputMethodEnabled()) {
             binding.btnActivate.startAnimation(shakeAnimation)
             activateState(false)
             switchState(false)

@@ -158,17 +158,9 @@ class FOFStartActivity : AppCompatActivity() {
         hideSystemUIUpdated()
         setStatusBarColor(this, resources.getColor(R.color.board_theme__red))
         supportActionBar?.hide()
-
-
-
-
-
         initializeRemoteConfigAndStartFlow()
-
-
         notificationTarget = intent?.getStringExtra("target_screen")
         action = intent?.getStringExtra(ACTION)
-
     }
 
     fun setStatusBarColor(activity: Activity, color: Int) {
@@ -418,106 +410,157 @@ class FOFStartActivity : AppCompatActivity() {
 
     }
 
+//    private fun gotoMainActivity() {
+//        Log.d("action", "intent?.action :${intent?.action} ")
+//        Log.d("action", "action :$action ")
+//        if (intent?.action == "android.intent.action.SHORTCUT_UNINSTALL_APP") {
+//            val uninstallIntent =
+//                Intent(this@FOFStartActivity, ConfirmUninstallActivity::class.java)
+//            uninstallIntent.putExtra(FROM_SHORTCUT, intent?.getStringExtra(FROM_SHORTCUT))
+//            startActivity(uninstallIntent)
+//            finish()
+//        } else {
+//            if (action != null) {
+//                when (action) {
+//                    DESTINATION1 -> {
+//                        startActivity(
+//                            Intent(this, NavigationActivity::class.java).putExtra(
+//                                ACTION,
+//                                action
+//                            )
+//                        )
+//                        action = null
+//
+//                    }
+//
+//                    DESTINATION2 -> {
+//                        startActivity(Intent(this, StickersViewActivity::class.java))
+//                        action = null
+//                        finish()
+//                    }
+//
+//                    DESTINATION3 -> {
+//                        Log.d("action", "action :$action ")
+//                        startActivity(
+//                            Intent(this, NavigationActivity::class.java).putExtra(
+//                                ACTION,
+//                                action
+//                            )
+//                        )
+//                        action = null
+//                    }
+//
+//                }
+//
+//            } else {
+//                val intent: Intent = if (!isKeyboardEnabled(this) || !isKeyboardSelected(this)) {
+//                    Intent(this, KeyboardSelectionActivity::class.java).putExtra(
+//                        "MoveTo", intent.getStringExtra("MoveTo")
+//                    )
+//                } else if (intent.getStringExtra("MoveTo").equals("sindhi_stickers")) {
+//                    Intent(this, StickersViewActivity::class.java).putExtra(
+//                        "MoveTo",
+//                        intent.getStringExtra("MoveTo")
+//                    )
+//                }
+//                else if (intent.getStringExtra("MoveTo").equals("themes")) {
+//                    Intent(this, NavigationActivity::class.java).putExtra(
+//                        "MoveTo", intent.getStringExtra("MoveTo")
+//                    )
+//                }
+//
+//                else if (intent.getStringExtra("MoveTo").equals("sindhi_status")) {
+//                    Intent(this, NavigationActivity::class.java).putExtra(
+//                        "MoveTo", intent.getStringExtra("MoveTo")
+//                    )
+//                }
+//                else if (intent.getStringExtra("MoveTo").equals("sindhi_editor")) {
+//                    Intent(this, NavigationActivity::class.java).putExtra(
+//                        "MoveTo", intent.getStringExtra("MoveTo")
+//                    )
+//                }
+//
+//                else if (intent.getStringExtra("MoveTo").equals("text_translator")) {
+//                    Intent(this, NavigationActivity::class.java).putExtra(
+//                        "MoveTo", intent.getStringExtra("MoveTo")
+//                    )
+//                }
+//
+//                else if (intent.getStringExtra("MoveTo").equals("speech_to_text")) {
+//                    Intent(this, NavigationActivity::class.java).putExtra(
+//                        "MoveTo", intent.getStringExtra("MoveTo")
+//                    )
+//                }
+//
+//                else if (intent.getStringExtra("MoveTo").equals("conversation")) {
+//                    Intent(this, NavigationActivity::class.java).putExtra(
+//                        "MoveTo", intent.getStringExtra("MoveTo")
+//                    )
+//                }
+//
+//
+//                else {
+//                    Intent(this, NavigationActivity::class.java).putExtra(
+//                        "MoveTo",
+//                        intent.getStringExtra("MoveTo")
+//                    )
+//                }
+//                startActivity(intent)
+//                finish()
+//            }
+//        }
+//
+//    }
+
     private fun gotoMainActivity() {
         Log.d("action", "intent?.action :${intent?.action} ")
         Log.d("action", "action :$action ")
+
         if (intent?.action == "android.intent.action.SHORTCUT_UNINSTALL_APP") {
-            val uninstallIntent =
-                Intent(this@FOFStartActivity, ConfirmUninstallActivity::class.java)
+            val uninstallIntent = Intent(this@FOFStartActivity, ConfirmUninstallActivity::class.java)
             uninstallIntent.putExtra(FROM_SHORTCUT, intent?.getStringExtra(FROM_SHORTCUT))
             startActivity(uninstallIntent)
             finish()
         } else {
             if (action != null) {
                 when (action) {
-                    DESTINATION1 -> {
+                    DESTINATION1, DESTINATION3 -> {
+                        // CHANGED: Route to SubscriptionActivity, pass 'action', and set fromName = "Splash"
                         startActivity(
-                            Intent(this, NavigationActivity::class.java).putExtra(
-                                ACTION,
-                                action
-                            )
+                            Intent(this, SubscriptionActivity::class.java)
+                                .putExtra("fromName", "Splash")
+                                .putExtra(ACTION, action)
                         )
                         action = null
-
+                        finish() // Don't forget to finish splash
                     }
-
                     DESTINATION2 -> {
                         startActivity(Intent(this, StickersViewActivity::class.java))
                         action = null
                         finish()
                     }
-
-                    DESTINATION3 -> {
-                        Log.d("action", "action :$action ")
-                        startActivity(
-                            Intent(this, NavigationActivity::class.java).putExtra(
-                                ACTION,
-                                action
-                            )
-                        )
-                        action = null
-                    }
-
                 }
-
             } else {
-                val intent: Intent = if (!isKeyboardEnabled(this) || !isKeyboardSelected(this)) {
+                val nextIntent: Intent = if (!isKeyboardEnabled(this) || !isKeyboardSelected(this)) {
                     Intent(this, KeyboardSelectionActivity::class.java).putExtra(
                         "MoveTo", intent.getStringExtra("MoveTo")
                     )
-                } else if (intent.getStringExtra("MoveTo").equals("sindhi_stickers")) {
+                } else if (intent.getStringExtra("MoveTo") == "sindhi_stickers") {
                     Intent(this, StickersViewActivity::class.java).putExtra(
-                        "MoveTo",
-                        intent.getStringExtra("MoveTo")
-                    )
-                }
-                else if (intent.getStringExtra("MoveTo").equals("themes")) {
-                    Intent(this, NavigationActivity::class.java).putExtra(
                         "MoveTo", intent.getStringExtra("MoveTo")
                     )
+                } else {
+                    // CHANGED: Route all other NavigationActivity cases to SubscriptionActivity
+                    Intent(this, SubscriptionActivity::class.java).apply {
+                        putExtra("fromName", "Splash")
+                        putExtra("MoveTo", intent.getStringExtra("MoveTo"))
+                    }
                 }
 
-                else if (intent.getStringExtra("MoveTo").equals("sindhi_status")) {
-                    Intent(this, NavigationActivity::class.java).putExtra(
-                        "MoveTo", intent.getStringExtra("MoveTo")
-                    )
-                }
-                else if (intent.getStringExtra("MoveTo").equals("sindhi_editor")) {
-                    Intent(this, NavigationActivity::class.java).putExtra(
-                        "MoveTo", intent.getStringExtra("MoveTo")
-                    )
-                }
-
-                else if (intent.getStringExtra("MoveTo").equals("text_translator")) {
-                    Intent(this, NavigationActivity::class.java).putExtra(
-                        "MoveTo", intent.getStringExtra("MoveTo")
-                    )
-                }
-
-                else if (intent.getStringExtra("MoveTo").equals("speech_to_text")) {
-                    Intent(this, NavigationActivity::class.java).putExtra(
-                        "MoveTo", intent.getStringExtra("MoveTo")
-                    )
-                }
-
-                else if (intent.getStringExtra("MoveTo").equals("conversation")) {
-                    Intent(this, NavigationActivity::class.java).putExtra(
-                        "MoveTo", intent.getStringExtra("MoveTo")
-                    )
-                }
-
-
-                else {
-                    Intent(this, NavigationActivity::class.java).putExtra(
-                        "MoveTo",
-                        intent.getStringExtra("MoveTo")
-                    )
-                }
-                startActivity(intent)
+                startActivity(nextIntent)
                 finish()
             }
         }
-
     }
 
     private fun getWalkThroughList(context: Context): ArrayList<WalkThroughItem> {
@@ -793,6 +836,8 @@ class FOFStartActivity : AppCompatActivity() {
                 RemoteConfigConst.RESUME_OVERALL,
                 getBoolean(RemoteConfigConst.RESUME_OVERALL)
             )
+
+
             editor.putBoolean(
                 RemoteConfigConst.NATIVE_UNINSTALL,
                 getBoolean(RemoteConfigConst.NATIVE_UNINSTALL)
@@ -801,6 +846,7 @@ class FOFStartActivity : AppCompatActivity() {
                 RemoteConfigConst.NATIVE_SURVEY,
                 getBoolean(RemoteConfigConst.NATIVE_SURVEY)
             )
+
 
             Log.e("resume", "value of ${getBoolean(RemoteConfigConst.RESUME_OVERALL)}")
 

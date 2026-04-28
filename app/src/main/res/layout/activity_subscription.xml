@@ -5,14 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".sindhikeyboard.ui.fragments.SubscriptionFragment">
-
+    tools:context=".sindhikeyboard.ui.activities.SubscriptionActivity">
 
     <ImageView
         android:id="@+id/ivBack"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_margin="10dp"
+        android:layout_margin="15dp"
         android:elevation="@dimen/_10sdp"
         android:src="@drawable/ic_close_btn"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,7 +23,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:elevation="@dimen/_10sdp"
-
         android:fontFamily="@font/lexend_medium"
         android:text="@string/details"
         android:textColor="@color/black"
@@ -137,8 +135,7 @@
                     android:layout_height="80dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="12dp"
-                    >
+                    android:padding="12dp">
 
                     <ImageView
                         android:layout_width="35dp"

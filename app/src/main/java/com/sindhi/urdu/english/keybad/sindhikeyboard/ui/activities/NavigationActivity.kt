@@ -30,14 +30,20 @@ import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.DES
 import com.sindhi.urdu.english.keybad.sindhikeyboard.utils.RemoteConfigConst.DESTINATION3
 
 class NavigationActivity : AppCompatBaseActivity() {
+
     private lateinit var binding: ActivityNavigationBinding
+
     private lateinit var navController: NavController
+
     private lateinit var googleMobileAdsConsentManager: GoogleMobileAdsConsentManager
+
     private var isPurchased: Boolean? = null
+
     private lateinit var appUpdateManager: AppUpdateManager
+
     private var action: String? = null
-    private val updateActivityResultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+
+    private val updateActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode != RESULT_OK) {
                 Log.e(" ", "Update flow failed! Result code: ${result.resultCode}")
             }
@@ -67,11 +73,8 @@ class NavigationActivity : AppCompatBaseActivity() {
             }
         }
 
-        // Initialize consent + purchase
-        googleMobileAdsConsentManager =
-            GoogleMobileAdsConsentManager.getInstance(applicationContext)
-        isPurchased =
-            PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PURCHASE, false)
+        googleMobileAdsConsentManager = GoogleMobileAdsConsentManager.getInstance(applicationContext)
+        isPurchased = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PURCHASE, false)
 
         // Set navigation graph start destination
         navController = findNavController(R.id.nav_host_fragment_content_navigation)
@@ -80,7 +83,6 @@ class NavigationActivity : AppCompatBaseActivity() {
 
         val moveTo = intent?.getStringExtra("MoveTo")
 
-// Combine logic: Check 'action' first, then 'moveTo', then default
         val startDest = when {
             action == DESTINATION1 -> R.id.nav_editor
             action == DESTINATION3 -> R.id.themesFragment
@@ -96,8 +98,6 @@ class NavigationActivity : AppCompatBaseActivity() {
         Log.d("action", "Setting Start Destination to: $startDest")
         navGraph.setStartDestination(startDest)
         navController.graph = navGraph
-
-// Clean up intent so it doesn't re-trigger on config changes
         intent?.removeExtra(ACTION)
         intent?.removeExtra("MoveTo")
         action = null
@@ -128,7 +128,6 @@ class NavigationActivity : AppCompatBaseActivity() {
         }
     }
 
-    // ✅ Modern Play Core 2.1.0 update check
     private fun checkForUpdates() {
         appUpdateManager = AppUpdateManagerFactory.create(this)
 
@@ -170,6 +169,7 @@ class NavigationActivity : AppCompatBaseActivity() {
             appUpdateManager.completeUpdate()
         }.show()
     }
+
 }
 
 

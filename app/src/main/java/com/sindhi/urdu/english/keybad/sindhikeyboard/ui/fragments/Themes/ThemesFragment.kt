@@ -110,23 +110,6 @@ class ThemesFragment : Fragment() {
             binding.shimmerLayoutBanner.visibility = View.GONE
         }
 
-        if (BuildConfig.BUILD_TYPE == "debug") {
-            MobileAds.openAdInspector(requireContext()) { error ->
-                if (error != null) {
-                    Log.e("AdInspector", "Error occurred: ${error.message}")
-                } else {
-                    Log.d("AdInspector", "Ad Inspector closed successfully")
-                }
-            }
-        } else {
-            MobileAds.openAdInspector(requireContext()) { error ->
-                if (error != null) {
-                    Log.e("AdInspector", "Error occurred: ${error.message}")
-                } else {
-                    Log.d("AdInspector", "Ad Inspector closed successfully")
-                }
-            }
-        }
         bundle.putString("ThemesFragment", "ThemesFragment")
         FirebaseLog.getAnalytics(requireContext()).logEvent("event_themes", bundle)
 
